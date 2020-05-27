@@ -19,4 +19,34 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
+    - name: Set variables
+      id: vars
+      run: |
+          echo ::set-output name=repo::$(echo ${GITHUB_REPOSITORY})
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+          echo ::set-output name=image-name::$(echo docker.pkg.github.com/ne-innovation/report-ordering-api/report-ordering-svc-${GITHUB_REF#refs/heads/})
+      #- name: npm install and npm run build
+       # run: |
+        #  npm i
+         # npm run build
+    - name: Login to Podman
+      id: login
+      run:  |
+         podman login docker.pkg.github.com -u afu174 -p ${{ github.token }}
+    - name: Build Image using Podman
+      run: |
+         podman build . -t ${{ steps.vars.outputs.image-name }}:${{ github.sha }}
+    - name: Push Image to Github Registry
+      run: |
+          podman push ${{ steps.vars.outputs.image-name }}:${{ github.sha }}
+    - name: Scan Image
+      uses: Azure/container-scan@v0
+      continue-on-error: true
+      with:
+        image-name: ${{ steps.vars.outputs.image-name }}:${{ github.sha }}
+        username: afu174
+        password: ${{ github.token }}
+        token: ${{ github.token }}
+        severity-threshold: HIGH
+        run-quality-checks: false
       
