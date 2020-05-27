@@ -24,7 +24,9 @@ jobs:
       run: |
           echo ::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-          echo ::set-output name=image_name::$(echo ${secrets.docker_repo_url}:${GITHUB_REF#refs/heads/}-$(git rev-parse --short HEAD))
+          echo ${{ steps.vars.branch}}
+          echo ${{ steps.vars.sha_short}}
+          echo ::set-output name=image_name::$(echo ${secrets.docker_repo_url}:${steps.vars.branch}-${steps.vars.sha_short})
       #- name: npm install and npm run build
        # run: |
         #  npm i
