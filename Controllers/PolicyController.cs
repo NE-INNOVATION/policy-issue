@@ -5,6 +5,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
 using policy_issue.Model;
+using System.Collections;
+using System.Linq;
 
 namespace policy_issue.Controllers
 {
@@ -20,18 +22,33 @@ namespace policy_issue.Controllers
             _logger = logger;
         }
 
+        [HttpGet]
+        public string GetVariables()
+        {
+            string message="";
+
+            foreach(DictionaryEntry e in System.Environment.GetEnvironmentVariables())
+            {
+                message += e.Key.ToString()  + ":" + e.Value.ToString();
+            }
+
+            return message;
+
+        }
+
         [HttpPost("issue/{quoteId}")]
         public string Issue(string quoteId, [FromBody] PolicyDto requestBody)
         {
-            return new JObject(new JProperty("policy", new JObject(new JProperty("policy-number",GeneratePolicyNumber()
-            )
-
-            ))).ToString();
+            return new JObject(
+                new JProperty("policy", 
+                    new JObject(
+                        new JProperty("policy-number",GeneratePolicyNumber()
+            )))).ToString();
         }
 
         private string GeneratePolicyNumber()
         {
-            return RandomNumber(111111,999999).ToString() + RandomNumber(1111111,9999999).ToString();
+            return RandomNumber(3,9).ToString()+ RandomNumber(111111,999999).ToString() + RandomNumber(111111,999999).ToString();
         }
 
         public int RandomNumber(int min, int max)
