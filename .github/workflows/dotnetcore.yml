@@ -15,16 +15,16 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.101
-    #- name: Install dependencies
-    #  run: dotnet restore
-    #- name: Build
-    #  run: dotnet build --configuration Release --no-restore
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
     - name: Set variables
       id: vars
       run: |
-          echo ::set-output name=repo::$(echo ${GITHUB_REPOSITORY})
+          echo ::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-          echo ::set-output name=image-name::$(echo quay.io/neinnovation/policyissue/policyissue-${GITHUB_REF#refs/heads/})
+          echo ::set-output name=image_name::$(echo ${secrets.docker_repo_url}:${GITHUB_REF#refs/heads/}-$(git rev-parse --short HEAD))
       #- name: npm install and npm run build
        # run: |
         #  npm i
@@ -32,20 +32,20 @@ jobs:
     - name: Login to Podman
       id: login
       run:  |
-         podman login quay.io -u neinnovation -p L/2MYcWU3NInoo3Ekr48t42wg9criQM8gSns1FvawhElopoSzX0HlItR6+zULY3q
+         podman login quay.io -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
     - name: Build Image using Podman
       run: |
-         podman build . -t quay.io/neinnovation/policyissue:${{ github.sha }}
+         podman build . -t ${{ steps.vars.image_name}}
     - name: Push Image to Github Registry
       run: |
-          podman push quay.io/neinnovation/policyissue:${{ github.sha }}
+          podman push ${{ steps.vars.image_name}}
     - name: Scan Image
       uses: Azure/container-scan@v0
       continue-on-error: true
       with:
-        image-name: ${{ steps.vars.outputs.image-name }}:${{ github.sha }}
-        username: neinnovation
-        password: L/2MYcWU3NInoo3Ekr48t42wg9criQM8gSns1FvawhElopoSzX0HlItR6+zULY3q
+        image-name: ${{ steps.vars.image_name}}
+        username: ${{ secrets.docker_username }}
+        password: ${{ secrets.docker_password }}
         token: ${{ github.token }}
         severity-threshold: HIGH
         run-quality-checks: false
