@@ -35,10 +35,10 @@ jobs:
          podman login quay.io -u neinnovation -p L/2MYcWU3NInoo3Ekr48t42wg9criQM8gSns1FvawhElopoSzX0HlItR6+zULY3q
     - name: Build Image using Podman
       run: |
-         podman build . -t ${{ steps.vars.outputs.image-name }}:${{ github.sha }}
+         podman build . -t ${{ steps.vars.outputs.repo }}:${{ github.sha }}
     - name: Push Image to Github Registry
       run: |
-          podman push ${{ steps.vars.outputs.image-name }}:${{ github.sha }}
+          podman push ${{ steps.vars.outputs.image-name }}
     - name: Scan Image
       uses: Azure/container-scan@v0
       continue-on-error: true
