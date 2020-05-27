@@ -15,10 +15,10 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.101
-    - name: Install dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
+    #- name: Install dependencies
+    #  run: dotnet restore
+    #- name: Build
+    #  run: dotnet build --configuration Release --no-restore
     - name: Set variables
       id: vars
       run: |
@@ -35,10 +35,10 @@ jobs:
          podman login quay.io -u neinnovation -p L/2MYcWU3NInoo3Ekr48t42wg9criQM8gSns1FvawhElopoSzX0HlItR6+zULY3q
     - name: Build Image using Podman
       run: |
-         podman build . -t master:${{ github.sha }}
+         podman build . -t quay.io/neinnovation/policyissue:${{ github.sha }}
     - name: Push Image to Github Registry
       run: |
-          podman push ${{ steps.vars.outputs.image-name }}
+          podman push quay.io/neinnovation/policyissue:${{ github.sha }}
     - name: Scan Image
       uses: Azure/container-scan@v0
       continue-on-error: true
