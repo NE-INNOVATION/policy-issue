@@ -24,7 +24,7 @@ jobs:
       run: |
           echo ::set-output name=repo::$(echo ${GITHUB_REPOSITORY})
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-          echo ::set-output name=image-name::$(echo docker.pkg.github.com/ne-innovation/policy-issue/policyissue-${GITHUB_REF#refs/heads/})
+          echo ::set-output name=image-name::$(echo quay.io/neinnovation/policyissue/policyissue-${GITHUB_REF#refs/heads/})
       #- name: npm install and npm run build
        # run: |
         #  npm i
@@ -32,7 +32,7 @@ jobs:
     - name: Login to Podman
       id: login
       run:  |
-         podman login docker.pkg.github.com -u afu174 -p ${{ github.token }}
+         podman login quay.io -u neinnovation -p L/2MYcWU3NInoo3Ekr48t42wg9criQM8gSns1FvawhElopoSzX0HlItR6+zULY3q
     - name: Build Image using Podman
       run: |
          podman build . -t ${{ steps.vars.outputs.image-name }}:${{ github.sha }}
@@ -44,8 +44,8 @@ jobs:
       continue-on-error: true
       with:
         image-name: ${{ steps.vars.outputs.image-name }}:${{ github.sha }}
-        username: afu174
-        password: ${{ github.token }}
+        username: neinnovation
+        password: L/2MYcWU3NInoo3Ekr48t42wg9criQM8gSns1FvawhElopoSzX0HlItR6+zULY3q
         token: ${{ github.token }}
         severity-threshold: HIGH
         run-quality-checks: false
