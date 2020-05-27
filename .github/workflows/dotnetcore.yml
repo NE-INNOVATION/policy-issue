@@ -24,7 +24,7 @@ jobs:
       run: |
           echo ::set-output name=repo::$(echo ${GITHUB_REPOSITORY})
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-          echo ::set-output name=image-name::$(echo docker.pkg.github.com/ne-innovation/report-ordering-api/report-ordering-svc-${GITHUB_REF#refs/heads/})
+          echo ::set-output name=image-name::$(echo docker.pkg.github.com/ne-innovation/policy-issue/policy-issue-${GITHUB_REF#refs/heads/})
       #- name: npm install and npm run build
        # run: |
         #  npm i
