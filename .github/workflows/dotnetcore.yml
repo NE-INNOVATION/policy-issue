@@ -23,9 +23,8 @@ jobs:
       id: consts
       run: |
         echo ::set-output name=repo::$(echo ${GITHUB_REPOSITORY})
-        echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        echo ::set-output name=sha_short::$(git rev-parse --short HEAD)
         echo ::set-output name=image-name::$(echo quay.io/neinnovation/policyissue:${GITHUB_REF#refs/heads/})
-        
         echo ::set-output name=docker_url::$(echo quay.io)
         echo ::set-output name=docker_repo::$(echo /neinnovation/policyissue)
         
@@ -33,10 +32,10 @@ jobs:
       id: login
       run:  |
          echo ${{ steps.consts.output.image-name }}
-         podman login ${{ steps.consts.output.docker_url }} -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
+         podman login quay.io -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
     - name: Build Image using Podman
       run: |
-         #podman build . -t ${{ steps.vars.output.image_name }}
+         podman build . -t ${{ steps.consts.output.image_name }}
     - name: Push Image to Github Registry
       run: |
           #podman push ${{ steps.vars.output.image_name }}
