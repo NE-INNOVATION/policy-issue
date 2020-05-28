@@ -24,18 +24,19 @@ jobs:
       run: |
         echo ::set-output name=repo::$(echo ${GITHUB_REPOSITORY})
         echo ::set-output name=sha_short::$(git rev-parse --short HEAD)
-        echo ::set-output name=image-name::$(echo quay.io/neinnovation/policyissue:${GITHUB_REF#refs/heads/})
-        echo ::set-output name=docker_url::$(echo quay.io)
+        echo ::set-output name=image-name::$(echo quay.io/neinnovation/policyissue})
+        echo ::set-output name=branch::${GITHUB_REF#refs/heads/}
         echo ::set-output name=docker_repo::$(echo /neinnovation/policyissue) 
         
     - name: Login to Podman
       id: login
       run:  |
+         echo ${{ steps.consts.output.branch }}
          echo ${{ steps.consts.output.image-name }}
          podman login quay.io -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
     - name: Build Image using Podman
       run: |
-         podman build . -t ${{ steps.consts.output.image_name }}
+         podman build . -t quay.io/neinnovation/policyissue:${{ steps.consts.output..docker_password }}
     - name: Push Image to Github Registry
       run: |
           #podman push ${{ steps.vars.output.image_name }}
