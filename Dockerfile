@@ -19,4 +19,5 @@ LABEL io.k8s.display-name="app name" \
       io.openshift.expose-services="8080:http"
 
 EXPOSE 8080
+ENV ASPNETCORE_URLS=http://*:8080
 ENTRYPOINT ["dotnet", "policy-issue.dll"]
