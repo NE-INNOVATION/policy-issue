@@ -16,9 +16,9 @@ jobs:
       with:
         dotnet-version: 3.1.101
     - name: Install dependencies
-      #run: dotnet restore
+      run: dotnet restore
     - name: Build
-      #run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore
     - name: Set variables
       id: vars
       run: |
@@ -30,7 +30,7 @@ jobs:
     - name: Login to Podman
       id: login
       run:  |
-         $(echo ${ steps.vars.outputs.repo_name })
+         echo ${{ steps.vars.outputs.repo_name }}
          #podman login quay.io -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
     - name: Build Image using Podman
       run: |
