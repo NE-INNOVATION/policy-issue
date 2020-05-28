@@ -30,11 +30,11 @@ jobs:
     - name: Login to Podman
       id: login
       run:  |
-         echo ${{ steps.vars.outputs.repos_name }}
+         echo ${{ steps.vars.outputs.repos_name }}:${{ steps.vars.output.branch }}${{ steps.vars.output.sha_short }}
          #podman login quay.io -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
     - name: Build Image using Podman
       run: |
-         #podman build . -t ${{ steps.vars.output.repo_name }}:${{ steps.vars.output.branch }}${{ steps.vars.output.sha_short }}
+         #podman build . -t ${{ steps.vars.outputs.repos_name }}:${{ steps.vars.output.branch }}${{ steps.vars.output.sha_short }}
     - name: Push Image to Github Registry
       run: |
           #podman push ${{ steps.vars.output.repo_name }}:${{ steps.vars.output.branch }}${{ steps.vars.output.sha_short }}
