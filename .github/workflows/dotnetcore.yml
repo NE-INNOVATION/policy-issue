@@ -56,7 +56,8 @@ jobs:
         # Oc command to be executed
         cmd: |
           'version'
-          'tag --source=push quay.io/neinnovation/policyissue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }} development/policyissue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}
+          'project development'
+          'tag --source=push quay.io/neinnovation/policyissue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }} development/policyissue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
 
     - name: Scan Image
       uses: Azure/container-scan@v0
