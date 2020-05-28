@@ -36,7 +36,7 @@ jobs:
          podman login quay.io -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
     - name: Build Image using Podman
       run: |
-         podman build . -t quay.io/neinnovation/policyissue:${{ steps.consts.output..docker_password }}
+         podman build . -t quay.io/neinnovation/policyissue:${{ steps.consts.output.branch }}
     - name: Push Image to Github Registry
       run: |
           #podman push ${{ steps.vars.output.image_name }}
