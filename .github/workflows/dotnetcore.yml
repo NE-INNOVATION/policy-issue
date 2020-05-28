@@ -25,7 +25,7 @@ jobs:
           echo ::set-output name=repos_name::$(echo quay.io/neinnovation/policyissue)
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
           echo ::set-output name=branch::${GITHUB_REF#refs/heads/}
-          echo ::set-output name=image_name::$(echo quay.io/neinnovation/policyissue:${steps.vars.output.branch}-${steps.vars.output.sha_short})
+          echo ::set-output name=image_name::$(echo quay.io/neinnovation/policyissue:${GITHUB_REF#refs/heads/}-$(git rev-parse --short HEAD))
          
     - name: Login to Podman
       id: login
