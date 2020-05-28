@@ -17,7 +17,9 @@ jobs:
         dotnet-version: 3.1.101
     - name: Extract branch name
       shell: bash
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      run: |
+        echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        echo "##[set-output name=sha_short;]$(echo $(git rev-parse --short HEAD))"
       id: extract_branch
     - name: Install dependencies
       run: dotnet restore
@@ -36,19 +38,19 @@ jobs:
       id: login
       run:  |
          echo ${{ steps.extract_branch.outputs.branch }}
-         echo ${{ steps.consts.output.image-name }}
+         echo ${{ steps.extract_branch.outputs.sha_short }}
          podman login quay.io -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
     - name: Build Image using Podman
       run: |
-         podman build . -t quay.io/neinnovation/policyissue:${{ steps.consts.output.branch }}
+         podman build . -t quay.io/neinnovation/policyissue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}
     - name: Push Image to Github Registry
       run: |
-          #podman push ${{ steps.vars.output.image_name }}
+          podman push quay.io/neinnovation/policyissue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}
     - name: Scan Image
       uses: Azure/container-scan@v0
       continue-on-error: true
       with:
-        image-name: ${{ steps.vars.output.repo_name }}:${{ steps.vars.output.branch }}${{ steps.vars.output.sha_short }}
+        image-name: quay.io/neinnovation/policyissue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}
         username: ${{ secrets.docker_username }}
         password: ${{ secrets.docker_password }}
         token: ${{ github.token }}
