@@ -22,16 +22,16 @@ jobs:
     - name: Set variables
       id: vars
       run: |
-          echo ::set-output name=repo_name::$(echo quay.io/neinnovation/policyissue)
+          echo ::set-output name=repo_name::quay.io/neinnovation/policyissue
           echo ::set-output name=repo::$(echo ${GITHUB_REPOSITORY})
-          echo ${{ steps.vars.outputs.repo_name }}
+          echo ::${{ steps.vars.outputs.repo_name }}
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
           echo ::set-output name=branch::$(echo ${secrets.docker_repo_url}:${GITHUB_REF#refs/heads/})
          #echo ::set-output name=image_name::$(echo ${secrets.docker_repo_url}:${steps.vars.output.branch}-${steps.vars.output.sha_short})
     - name: Login to Podman
       id: login
       run:  |
-         echo ${{ steps.vars.output.repo_name }}
+         $(echo ${ steps.vars.outputs.repo_name })
          podman login quay.io -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
     - name: Build Image using Podman
       run: |
