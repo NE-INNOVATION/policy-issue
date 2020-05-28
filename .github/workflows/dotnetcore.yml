@@ -19,19 +19,24 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
-    - name: Set variables
+    - name: Set Constants
+      id: consts
+      run: |
+        echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        echo ::set-output name=branch::${GITHUB_REF#refs/heads/}
+        echo ::set-output name=docker_url::$(echo quay.io)
+        echo ::set-output name=docker_repo::$(echo /neinnovation/policyissue)
+        
+    - name: Derived Variables
       id: vars
       run: |
-          echo ::set-output name=repos_name::$(echo quay.io/neinnovation/policyissue)
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-          echo ::set-output name=branch::${GITHUB_REF#refs/heads/}
-          echo ::set-output name=image_name::$(echo quay.io/neinnovation/policyissue:${GITHUB_REF#refs/heads/}-$(git rev-parse --short HEAD))
+          echo ::set-output name=image_name::$(echo ${{ steps.consts.output.docker_url }}/${{ steps.consts.output.docker_repo }}:${{ steps.consts.output.branch }}-${{ steps.consts.output.sha_short }})
          
     - name: Login to Podman
       id: login
       run:  |
          echo ${{ steps.vars.output.image_name }}
-         #podman login quay.io -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
+         #podman login ${{ steps.consts.output.docker_url }} -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
     - name: Build Image using Podman
       run: |
          #podman build . -t ${{ steps.vars.output.image_name }}
