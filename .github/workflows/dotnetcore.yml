@@ -22,10 +22,12 @@ jobs:
     - name: Set variables
       id: vars
       run: |
+          echo ::set-output name=repo_name::$(echo /neinnovation/policyissue)
           echo ::set-output name=repo::$(echo ${GITHUB_REPOSITORY})
+          echo ${{ steps.vars.outputs.repo_name }}
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
           echo ::set-output name=image_name::$(echo ${secrets.docker_repo_url}:${GITHUB_REF#refs/heads/})
-         #echo ::set-output name=image_name::$(echo ${secrets.docker_repo_url}:${steps.vars.branch}-${steps.vars.sha_short})
+         #echo ::set-output name=image_name::$(echo ${secrets.docker_repo_url}:${steps.vars.output.branch}-${steps.vars.output.sha_short})
       #- name: npm install and npm run build
        # run: |
         #  npm i
@@ -33,18 +35,19 @@ jobs:
     - name: Login to Podman
       id: login
       run:  |
-         podman login quay.io -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
+         echo ${{ steps.vars.output.image_name }}
+         podman login ${{secrets.docker_repo_url}} -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
     - name: Build Image using Podman
       run: |
-         podman build . -t ${{ steps.vars.image_name}}
+         podman build . -t ${{secrets.docker_repo_url}}${{ steps.vars.output.repo_name }}:${{ steps.vars.output.sha_short }}
     - name: Push Image to Github Registry
       run: |
-          podman push ${{ steps.vars.image_name}}
+          podman push ${{secrets.docker_repo_url}}${{ steps.vars.output.repo_name }}:${{ steps.vars.output.sha_short }}
     - name: Scan Image
       uses: Azure/container-scan@v0
       continue-on-error: true
       with:
-        image-name: ${{ steps.vars.image_name}}
+        image-name: ${{secrets.docker_repo_url}}${{ steps.vars.output.repo_name }}:${{ steps.vars.output.sha_short }}
         username: ${{ secrets.docker_username }}
         password: ${{ secrets.docker_password }}
         token: ${{ github.token }}
