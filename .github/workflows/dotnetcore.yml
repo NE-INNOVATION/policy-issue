@@ -23,9 +23,9 @@ jobs:
       id: vars
       run: |
           echo ::set-output name=repos_name::$(echo quay.io/neinnovation/policyissue)
-          echo ::set-output name=repo::$(echo ${GITHUB_REPOSITORY})
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
           echo ::set-output name=branch::${GITHUB_REF#refs/heads/}
+          echo ::set-output name=image_name::$(echo quay.io/neinnovation/policyissue:${steps.vars.output.branch}-${steps.vars.output.sha_short})
          #echo ::set-output name=image_name::$(echo quay.io/neinnovation/policyissue:${steps.vars.output.branch}-${steps.vars.output.sha_short})
     - name: Login to Podman
       id: login
@@ -34,10 +34,10 @@ jobs:
          #podman login quay.io -u ${{ secrets.docker_username }} -p ${{ secrets.docker_password }}
     - name: Build Image using Podman
       run: |
-         #podman build . -t ${{ steps.vars.outputs.repos_name }}:${{ steps.vars.output.branch }}${{ steps.vars.output.sha_short }}
+         #podman build . -t ${{ steps.vars.output.image_name }}
     - name: Push Image to Github Registry
       run: |
-          #podman push ${{ steps.vars.output.repo_name }}:${{ steps.vars.output.branch }}${{ steps.vars.output.sha_short }}
+          #podman push ${{ steps.vars.output.image_name }}
     - name: Scan Image
       uses: Azure/container-scan@v0
       continue-on-error: true
