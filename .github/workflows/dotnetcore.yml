@@ -26,7 +26,7 @@ jobs:
         echo ::set-output name=sha_short::$(git rev-parse --short HEAD)
         echo ::set-output name=image-name::$(echo quay.io/neinnovation/policyissue:${GITHUB_REF#refs/heads/})
         echo ::set-output name=docker_url::$(echo quay.io)
-        echo ::set-output name=docker_repo::$(echo /neinnovation/policyissue)
+        echo ::set-output name=docker_repo::$(echo /neinnovation/policyissue) 
         
     - name: Login to Podman
       id: login
