@@ -21,10 +21,10 @@ jobs:
         echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         echo "##[set-output name=sha_short;]$(echo $(git rev-parse --short HEAD))"
       id: extract_branch
-    - name: Install dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
+    #- name: Install dependencies
+      #run: dotnet restore
+    #- name: Build
+      #run: dotnet build --configuration Release --no-restore
     - name: Set Constants
       id: consts
       run: |
