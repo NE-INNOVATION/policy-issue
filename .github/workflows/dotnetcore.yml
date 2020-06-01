@@ -30,9 +30,9 @@ jobs:
       run: |
         echo ::set-output name=repo::$(echo ${GITHUB_REPOSITORY})
         echo ::set-output name=sha_short::$(git rev-parse --short HEAD)
-        echo ::set-output name=image-name::$(echo quay.io/neinnovation/policyissue})
+        echo ::set-output name=image-name::$(echo quay.io/neinnovationorg/policy-issue})
         echo ::set-output name=branch::${GITHUB_REF#refs/heads/}
-        echo ::set-output name=docker_repo::$(echo /neinnovation/policyissue) 
+        echo ::set-output name=docker_repo::$(echo /neinnovationorg/policy-issue) 
         
     - name: Login to Podman
       id: login
@@ -57,10 +57,10 @@ jobs:
         cmd: |
           'version'
           'project development'
-          'delete all --selector app=policyissue'
-          'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }} development/policyissue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
+          'delete all --selector app=policy-issue'
+          'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }} development/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
           'new-app quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
-          'expose services/policyissue'
+          'expose services/policy-issue'
     - name: Scan Image
       uses: Azure/container-scan@v0
       continue-on-error: true
