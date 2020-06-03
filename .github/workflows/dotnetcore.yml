@@ -63,7 +63,7 @@ jobs:
         cmd: |
           'version'
           'project dev'
-          'import-image quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
+          'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }} dev/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
     - name: Scan Image
       uses: Azure/container-scan@v0
       continue-on-error: true
