@@ -54,13 +54,16 @@ jobs:
         # JSON with values to connect to the Openshift cluster
         parameters: '{"username": "${{ secrets.OPENSHIFT_USER }}", "acceptUntrustedCerts": "true", "password":"${{ secrets.OPENSHIFT_PASSWORD }}"}'
         # Oc command to be executed
+          #'version'
+          #'project development'
+          #'delete all --selector app=policy-issue'
+          #'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }} development/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
+          #'new-app quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
+          #'expose services/policy-issue':  
         cmd: |
           'version'
-          'project development'
-          'delete all --selector app=policy-issue'
-          'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }} development/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
-          'new-app quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
-          'expose services/policy-issue'
+          'project dev'
+          'import-image policy-issue'
     - name: Scan Image
       uses: Azure/container-scan@v0
       continue-on-error: true
