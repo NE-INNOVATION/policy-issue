@@ -37,7 +37,7 @@ namespace policy_issue.Controllers
         }
 
         [HttpPost("issue/{quoteId}")]
-        public string Issue(string quoteId, [FromBody] PolicyDto requestBody)
+        public string Issue(string quoteId, PolicyDto requestBody)
         {
             return new JObject(
                 new JProperty("policy", 
