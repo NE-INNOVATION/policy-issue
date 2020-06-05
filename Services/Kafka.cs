@@ -22,13 +22,13 @@ namespace policy_issue.Services
             logger.LogInformation($"Current Working Directory: { Environment.CurrentDirectory }");
 
             if(File.Exists("../etc/config/server.config"))logger.LogInformation("Found File");
-            else logger.LogInformation($"Didnt find file and using env value{Environment.GetEnvironmentVariable("path") }");
+            else logger.LogInformation($"Didnt find file and using env value {Environment.GetEnvironmentVariable("file-path") }");
 
-            if(!File.Exists("../etc/config/server.config") && !File.Exists(Environment.GetEnvironmentVariable("path")))
+            if(!File.Exists("./server.config") && !File.Exists(Environment.GetEnvironmentVariable("file-path")))
             return "No files found";
             try
             {
-            var config = await LoadConfig( Environment.GetEnvironmentVariable("path") ?? "../etc/config/server.config", null);
+            var config = LoadConfig( Environment.GetEnvironmentVariable("file-path") ?? "./server.config", null);
             logger.LogInformation($"Bootstrap servers { config.BootstrapServers }");
 
             var topic = "policy-issue";
@@ -43,12 +43,12 @@ namespace policy_issue.Services
             return "Success";
         }
 
-        static async Task<ClientConfig> LoadConfig(string configPath, string certDir)
+        static ClientConfig LoadConfig(string configPath, string certDir)
         {
             try
             {
-                var cloudConfig = (await File.ReadAllLinesAsync(configPath))
-                    .Where(line => !line.StartsWith("#"))
+                var cloudConfig = (File.ReadAllLines(configPath))
+                    .Where(line => !line.StartsWith("#") && line.Contains('='))
                     .ToDictionary(
                         line => line.Substring(0, line.IndexOf('=')),
                         line => line.Substring(line.IndexOf('=') + 1));
