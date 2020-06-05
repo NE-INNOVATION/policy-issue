@@ -62,8 +62,8 @@ jobs:
           #'expose services/policy-issue':  
         cmd: |
           'version'
-          'project dev'
-          'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }} dev/policy-issue:${{ steps.extract_branch.outputs.branch }}'
+          'project development'
+          'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }} development/policy-issue:${{ steps.extract_branch.outputs.branch }}'
     - name: Scan Image
       uses: Azure/container-scan@v0
       continue-on-error: true
