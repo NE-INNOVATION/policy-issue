@@ -21,6 +21,8 @@ namespace policy_issue.Services
             try
             {
             var config = await LoadConfig("test.yaml", null);
+            Console.WriteLine($"Bootstrap servers { config.BootstrapServers }");
+
             var topic = "policy-issue";
             await CreateTopicMaybe(topic, 1, 3, config);
 

@@ -7,6 +7,7 @@ using System;
 using policy_issue.Model;
 using System.Collections;
 using System.Linq;
+using policy_issue.Services;
 
 namespace policy_issue.Controllers
 {
@@ -44,6 +45,13 @@ namespace policy_issue.Controllers
                     new JObject(
                         new JProperty("policy-number",GeneratePolicyNumber()
             )))).ToString();
+        }
+
+        [HttpPost("publish")]
+        public string publish( PolicyDto requestBody)
+        {
+            KafkaService.SendMessage(requestBody);
+            return "Success";
         }
 
         private string GeneratePolicyNumber()
