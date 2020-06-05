@@ -18,9 +18,12 @@ namespace policy_issue.Services
         public static async void SendMessage(PolicyDto policy)
         {
             Console.WriteLine($"Current Working Directory: { Environment.CurrentDirectory }");
+
+            if(File.Exists("../etc/config/server.config")) Console.WriteLine("Found File");
+            else Console.WriteLine($"Didnt find file and using env value{Environment.GetEnvironmentVariable("path") }");
             try
             {
-            var config = await LoadConfig("test.yaml", null);
+            var config = await LoadConfig( Environment.GetEnvironmentVariable("path") ?? "../etc/config/server.config", null);
             Console.WriteLine($"Bootstrap servers { config.BootstrapServers }");
 
             var topic = "policy-issue";
