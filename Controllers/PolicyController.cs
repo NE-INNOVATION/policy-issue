@@ -30,7 +30,7 @@ namespace policy_issue.Controllers
 
             foreach(DictionaryEntry e in System.Environment.GetEnvironmentVariables())
             {
-                message += e.Key.ToString()  + ":" + e.Value.ToString();
+                message += e.Key.ToString()  + "::" + e.Value.ToString() + "|||";
             }
 
             return message;
