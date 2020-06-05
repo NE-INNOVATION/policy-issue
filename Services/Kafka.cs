@@ -1,7 +1,9 @@
 using Confluent.Kafka;
 using Confluent.Kafka.Admin;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using policy_issue.Controllers;
 using policy_issue.Model;
 using System;
 using System.Collections.Generic;
@@ -15,16 +17,19 @@ namespace policy_issue.Services
     public class KafkaService
     {
 
-        public static async void SendMessage(PolicyDto policy)
+        public static async Task<string> SendMessage(PolicyDto policy, ILogger<PolicyController> logger)
         {
-            Console.WriteLine($"Current Working Directory: { Environment.CurrentDirectory }");
+            logger.LogInformation($"Current Working Directory: { Environment.CurrentDirectory }");
 
-            if(File.Exists("../etc/config/server.config")) Console.WriteLine("Found File");
-            else Console.WriteLine($"Didnt find file and using env value{Environment.GetEnvironmentVariable("path") }");
+            if(File.Exists("../etc/config/server.config"))logger.LogInformation("Found File");
+            else logger.LogInformation($"Didnt find file and using env value{Environment.GetEnvironmentVariable("path") }");
+
+            if(!File.Exists("../etc/config/server.config") || !File.Exists(Environment.GetEnvironmentVariable("path")))
+            return "No files found";
             try
             {
             var config = await LoadConfig( Environment.GetEnvironmentVariable("path") ?? "../etc/config/server.config", null);
-            Console.WriteLine($"Bootstrap servers { config.BootstrapServers }");
+            logger.LogInformation($"Bootstrap servers { config.BootstrapServers }");
 
             var topic = "policy-issue";
             await CreateTopicMaybe(topic, 1, 3, config);
@@ -33,8 +38,9 @@ namespace policy_issue.Services
             }
             catch(Exception ex)
             {
-                Console.WriteLine(ex);
+                return ex.Message + "||" +ex.StackTrace;
             }
+            return "Success";
         }
 
         static async Task<ClientConfig> LoadConfig(string configPath, string certDir)

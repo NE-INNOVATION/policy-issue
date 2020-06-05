@@ -48,10 +48,11 @@ namespace policy_issue.Controllers
         }
 
         [HttpPost("publish")]
-        public string publish( PolicyDto requestBody)
+        public async System.Threading.Tasks.Task<string> publishAsync( PolicyDto requestBody)
         {
-            KafkaService.SendMessage(requestBody);
-            return "Success";
+            _logger.LogInformation("Service called for publish");
+            var message = await KafkaService.SendMessage(requestBody, _logger);
+            return message;
         }
 
         private string GeneratePolicyNumber()
