@@ -24,7 +24,7 @@ namespace policy_issue.Services
             if(File.Exists("../etc/config/server.config"))logger.LogInformation("Found File");
             else logger.LogInformation($"Didnt find file and using env value{Environment.GetEnvironmentVariable("path") }");
 
-            if(!File.Exists("../etc/config/server.config") || !File.Exists(Environment.GetEnvironmentVariable("path")))
+            if(!File.Exists("../etc/config/server.config") && !File.Exists(Environment.GetEnvironmentVariable("path")))
             return "No files found";
             try
             {
