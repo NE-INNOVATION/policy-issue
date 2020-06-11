@@ -19,28 +19,48 @@ namespace policy_issue.Services
 
         public static async Task<string> SendMessage(PolicyDto policy, ILogger<PolicyController> logger)
         {
-            logger.LogInformation($"Current Working Directory: { Environment.CurrentDirectory }");
+            var config = new ProducerConfig {
 
-            if(File.Exists("../etc/config/server.config"))logger.LogInformation("Found File");
-            else logger.LogInformation($"Didnt find file and using env value {Environment.GetEnvironmentVariable("file-path") }");
+                BootstrapServers = "my-cluster-kafka-bootstrap:9092",
+            };
 
-            if(!File.Exists("./server.config") && !File.Exists(Environment.GetEnvironmentVariable("file-path")))
-            return "No files found";
-            try
+            using (var p = new ProducerBuilder<Null, string>(config).Build())
             {
-            var config = LoadConfig( Environment.GetEnvironmentVariable("file-path") ?? "./server.config", null);
-            logger.LogInformation($"Bootstrap servers { config.BootstrapServers }");
-
-            var topic = "policy-issue";
-            await CreateTopicMaybe(topic, 1, 3, config);
-
-            Produce(topic, config);
+                try
+                {
+                    var dr = await p.ProduceAsync("policy", new Message<Null, string> { Value="test-with-app" });
+                    Console.WriteLine($"Delivered '{dr.Value}' to '{dr.TopicPartitionOffset}'");
+                }
+                catch (ProduceException<Null, string> e)
+                {
+                    Console.WriteLine($"Delivery failed: {e.Error.Reason}");
+                }
             }
-            catch(Exception ex)
-            {
-                return ex.Message + "||" +ex.StackTrace;
-            }
-            return "Success";
+            return "success";
+            // logger.LogInformation($"Current Working Directory: { Environment.CurrentDirectory }");
+
+            // if(File.Exists("../etc/config/server.config"))logger.LogInformation("Found File");
+            // else logger.LogInformation($"Didnt find file and using env value {Environment.GetEnvironmentVariable("file-path") }");
+
+            // if(!File.Exists("./server.config") && !File.Exists(Environment.GetEnvironmentVariable("file-path")))
+            // return "No files found";
+            // try
+            // {
+
+            //     //var config = new Uri("http://my-connect-cluster-connect-api-development.apps.openshift.ne-innovation.com");
+            // var config = LoadConfig( Environment.GetEnvironmentVariable("file-path") ?? "./server.config", null);
+            // logger.LogInformation($"Bootstrap servers { config.BootstrapServers }");
+
+            // var topic = "policy-issue";
+            // await CreateTopicMaybe(topic, 1, 3, config);
+
+            //Produce(topic, config);
+            // }
+            // catch(Exception ex)
+            // {
+            //     return ex.Message + "||" +ex.StackTrace;
+            // }
+            // return "Success";
         }
 
         static ClientConfig LoadConfig(string configPath, string certDir)
