@@ -29,7 +29,7 @@ namespace policy_issue.Services
                 {
                     var dr = await p.ProduceAsync("policy", new Message<Null, string> { Value=policy });
                     logger.LogInformation($"Delivered to topic '{dr.Topic}'");
-                    return $"Delivered '{dr.Value}' to '{dr.TopicPartitionOffset}'";
+                    return $"Delivered to topic '{dr.Topic}'";
                 }
                 catch (ProduceException<Null, string> e)
                 {
