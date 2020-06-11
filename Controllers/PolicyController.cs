@@ -8,6 +8,7 @@ using policy_issue.Model;
 using System.Collections;
 using System.Linq;
 using policy_issue.Services;
+using System.Threading.Tasks;
 
 namespace policy_issue.Controllers
 {
@@ -38,21 +39,28 @@ namespace policy_issue.Controllers
         }
 
         [HttpPost("issue/{quoteId}")]
-        public string Issue(string quoteId, PolicyDto requestBody)
+        public async Task<IActionResult> Issue(string quoteId,[FromBody] object content)
         {
-            return new JObject(
+            var request = JObject.Parse(content.ToString());
+            
+            var policyInfo = new JObject(
                 new JProperty("policy", 
                     new JObject(
                         new JProperty("policy-number",GeneratePolicyNumber()
-            )))).ToString();
+            ),new JProperty("policy-info", request))));
+            var policyToken = policyInfo.SelectToken("policy");
+
+            var message = await KafkaService.SendMessage(policyInfo.ToString(), _logger);
+            var finalResult = new JObject(new JProperty("result",new JObject(new JProperty("status",message),new JProperty("policy",policyToken))));
+            return Ok(finalResult.ToString());
+
         }
 
         [HttpPost("publish")]
-        public async System.Threading.Tasks.Task<string> publishAsync( PolicyDto requestBody)
+        public async System.Threading.Tasks.Task<string> publishAsync( Object requestBody)
         {
             _logger.LogInformation("Service called for publish");
-            var message = await KafkaService.SendMessage(requestBody, _logger);
-            return message;
+            return await KafkaService.SendMessage(requestBody.ToString(), _logger);
         }
 
         private string GeneratePolicyNumber()
