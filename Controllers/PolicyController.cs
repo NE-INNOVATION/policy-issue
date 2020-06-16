@@ -9,6 +9,8 @@ using System.Collections;
 using System.Linq;
 using policy_issue.Services;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 
 namespace policy_issue.Controllers
 {
@@ -25,6 +27,8 @@ namespace policy_issue.Controllers
         }
 
         [HttpGet]
+        [Authorize]
+        [EnableCors("AllowAll")]
         public string GetVariables()
         {
             string message="";
@@ -39,6 +43,8 @@ namespace policy_issue.Controllers
         }
 
         [HttpPost("issue/{quoteId}")]
+        [Authorize]
+        [EnableCors("AllowAll")]
         public async Task<IActionResult> Issue(string quoteId,[FromBody] object content)
         {
             var request = JObject.Parse(content.ToString());
@@ -57,6 +63,8 @@ namespace policy_issue.Controllers
         }
 
         [HttpPost("publish")]
+        [Authorize]
+        [EnableCors("AllowAll")]
         public async System.Threading.Tasks.Task<string> publishAsync( Object requestBody)
         {
             _logger.LogInformation("Service called for publish");
