@@ -16,7 +16,6 @@ namespace policy_issue.Services
 {
     public class KafkaService
     {
-
         public static async Task<string> SendMessage(string policy, ILogger<PolicyController> logger)
         {
             var config = new ProducerConfig {

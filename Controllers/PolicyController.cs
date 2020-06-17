@@ -18,13 +18,15 @@ namespace policy_issue.Controllers
     {
 
         private readonly ILogger<PolicyController> _logger;
+        private readonly KafkaConsumer _consumer;
 
-        public PolicyController(ILogger<PolicyController> logger)
+        public PolicyController(ILogger<PolicyController> logger, KafkaConsumer consumer)
         {
             _logger = logger;
+            _consumer =  consumer;
         }
 
-        [HttpGet]
+        [HttpGet("config")]
         public string GetVariables()
         {
             string message="";
@@ -36,6 +38,12 @@ namespace policy_issue.Controllers
 
             return message;
 
+        }
+
+        [HttpGet("message")]
+        public string GetMessage()
+        {
+            return _consumer.GetMessage();
         }
 
         [HttpPost("issue/{quoteId}")]
