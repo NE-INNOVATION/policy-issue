@@ -9,6 +9,8 @@ using System.Collections;
 using System.Linq;
 using policy_issue.Services;
 using System.Threading.Tasks;
+using System.Threading;
+using System.Collections.Generic;
 
 namespace policy_issue.Controllers
 {
@@ -41,9 +43,10 @@ namespace policy_issue.Controllers
         }
 
         [HttpGet("message")]
-        public string GetMessage()
+        public List<string> GetMessage()
         {
-            return _consumer.GetMessage();
+            CancellationTokenSource cts = new CancellationTokenSource();
+            return _consumer.SetupConsume(cts.Token);
         }
 
         [HttpPost("issue/{quoteId}")]
