@@ -43,10 +43,9 @@ namespace policy_issue.Controllers
         }
 
         [HttpGet("message")]
-        public List<string> GetMessage()
+        public List<string> GetMessage([FromQuery] long time)
         {
-            CancellationTokenSource cts = new CancellationTokenSource();
-            return _consumer.SetupConsume(cts.Token);
+            return _consumer.SetupConsume((time > 20000 || time == 0 )?4000 : time );
         }
 
         [HttpPost("issue/{quoteId}")]

@@ -29,7 +29,7 @@ namespace policy_issue.Services
 
         }
 
-        public List<string> SetupConsume(CancellationToken cancellationToken)
+        public List<string> SetupConsume(long pollingMs = 4000)
         {
             messages.Clear();
             var timer = new Stopwatch();
@@ -80,7 +80,7 @@ namespace policy_issue.Services
                     {
                         try
                         {
-                            var consumeResult = consumer.Consume(cancellationToken);
+                            var consumeResult = consumer.Consume();
 
                             if (consumeResult.IsPartitionEOF)
                             {
@@ -127,20 +127,6 @@ namespace policy_issue.Services
 
             return messages;
 
-        }
-
-        public string GetMessage()
-        {
-            try
-            {
-                var result = _kafkaConsumer.Consume(10000);
-                return result.Message?.Value;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                throw;
-            }
         }
     }
 
