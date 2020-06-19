@@ -22,6 +22,8 @@ namespace policy_issue.Controllers
         private readonly ILogger<PolicyController> _logger;
         private readonly KafkaConsumer _consumer;
 
+        private static string MongoConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION") ?? "mongodb://mongodb_user:mongodb_password@mongodb:27017/mongodb?replicaSet=rs0";
+
         public PolicyController(ILogger<PolicyController> logger, KafkaConsumer consumer)
         {
             _logger = logger;
@@ -46,6 +48,20 @@ namespace policy_issue.Controllers
         public List<string> GetMessage([FromQuery] long time)
         {
             return _consumer.SetupConsume((time > 20000 || time == 0 )?4000 : time );
+        }
+
+        [HttpGet("mongo")]
+        public string MongoConnector([FromQuery] string database, [FromQuery] string collection, [FromQuery] string queryName, [FromQuery] string queryValue)
+        {
+            try
+            {
+            var mongo = new MongoConnector(MongoConnectionString);
+            return mongo.GetCollectionData(database,collection, queryName,queryValue);
+            }
+            catch(Exception ex)
+            {
+                return ex.ToString();
+            }
         }
 
         [HttpPost("issue/{quoteId}")]
