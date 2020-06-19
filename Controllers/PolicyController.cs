@@ -22,7 +22,7 @@ namespace policy_issue.Controllers
         private readonly ILogger<PolicyController> _logger;
         private readonly KafkaConsumer _consumer;
 
-        private static string MongoConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION") ?? "mongodb://mongodb_user:mongodb_password@mongodb:27017/mongodb?replicaSet=rs0";
+        private static string MongoConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION") ?? "mongodb://lrqi_db:lrqi_db_pwd@lrqidb-shard-00-00-wksjy.mongodb.net:27017,lrqidb-shard-00-01-wksjy.mongodb.net:27017,lrqidb-shard-00-02-wksjy.mongodb.net:27017/test?authSource=admin&replicaSet=LRQIDB-shard-0&readPreference=primary&retryWrites=true&ssl=true";
 
         public PolicyController(ILogger<PolicyController> logger, KafkaConsumer consumer)
         {
@@ -44,10 +44,21 @@ namespace policy_issue.Controllers
 
         }
 
+        [HttpGet("policyData")]
+        public string GetPolicyData([FromQuery] string quoteId)
+        {
+           var mongo = new MongoConnector(MongoConnectionString);
+            var policyObject = mongo.GetPolicyObject(quoteId);
+            return policyObject.ToString();
+
+        }
+
+
         [HttpGet("message")]
         public List<string> GetMessage([FromQuery] long time)
         {
             return _consumer.SetupConsume((time > 20000 || time == 0 )?4000 : time );
+            
         }
 
         [HttpGet("mongo")]
@@ -69,14 +80,18 @@ namespace policy_issue.Controllers
         {
             var request = JObject.Parse(content.ToString());
             
+            var mongo = new MongoConnector(MongoConnectionString);
+            var policyObject = mongo.GetPolicyObject(quoteId);
+            
+
             var policyInfo = new JObject(
                 new JProperty("policy", 
                     new JObject(
-                        new JProperty("policy-number",GeneratePolicyNumber()
-            ),new JProperty("policy-info", request))));
+                        new JProperty("policy-number",GeneratePolicyNumber()),
+                        new JProperty("policy-info", request, mongo))));
             var policyToken = policyInfo.SelectToken("policy");
 
-            var message = await KafkaService.SendMessage(policyInfo.ToString(), _logger);
+            var message = await KafkaService.SendMessage(policyToken.ToString(), _logger);
             var finalResult = new JObject(new JProperty("result",new JObject(new JProperty("status",message),new JProperty("policy",policyToken))));
             return Ok(finalResult.ToString());
 
