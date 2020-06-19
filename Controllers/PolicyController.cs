@@ -24,6 +24,8 @@ namespace policy_issue.Controllers
 
         private static string MongoConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION") ?? "mongodb://lrqi_db:lrqi_db_pwd@lrqidb-shard-00-00-wksjy.mongodb.net:27017,lrqidb-shard-00-01-wksjy.mongodb.net:27017,lrqidb-shard-00-02-wksjy.mongodb.net:27017/test?authSource=admin&replicaSet=LRQIDB-shard-0&readPreference=primary&retryWrites=true&ssl=true";
 
+        private static string MONGO_DB_NAME = Environment.GetEnvironmentVariable("MONGO_DB_NAME") ?? "lrqi";
+
         public PolicyController(ILogger<PolicyController> logger, KafkaConsumer consumer)
         {
             _logger = logger;
@@ -47,7 +49,7 @@ namespace policy_issue.Controllers
         [HttpGet("policyData")]
         public string GetPolicyData([FromQuery] string quoteId)
         {
-           var mongo = new MongoConnector(MongoConnectionString);
+           var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
             var policyObject = mongo.GetPolicyObject(quoteId);
             return policyObject.ToString();
 
@@ -55,10 +57,9 @@ namespace policy_issue.Controllers
 
 
         [HttpGet("message")]
-        public List<string> GetMessage([FromQuery] long time)
+        public string GetMessage([FromQuery] long time)
         {
-            return _consumer.SetupConsume((time > 20000 || time == 0 )?4000 : time );
-            
+            return _consumer.SetupConsume((time > 20000 || time == 0 )?4000 : time ).FirstOrDefault();
         }
 
         [HttpGet("mongo")]
@@ -66,7 +67,7 @@ namespace policy_issue.Controllers
         {
             try
             {
-            var mongo = new MongoConnector(MongoConnectionString,"lrqi");
+            var mongo = new MongoConnector(MongoConnectionString,MONGO_DB_NAME);
             return mongo.GetCollectionData(database,collection, queryName,queryValue);
             }
             catch(Exception ex)
@@ -80,7 +81,7 @@ namespace policy_issue.Controllers
         {
             var request = JObject.Parse(content.ToString());
             
-            var mongo = new MongoConnector(MongoConnectionString);
+            var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
             var policyObject = mongo.GetPolicyObject(quoteId);
 
             policyObject.Add(new JProperty("PolicyNumber", GeneratePolicyNumber()));
