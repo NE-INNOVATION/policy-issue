@@ -46,7 +46,7 @@ namespace policy_issue.Services
                 EnablePartitionEof = true
             };
 
-            const int commitPeriod = 5;
+            const int commitPeriod = 1;
 
             // Note: If a key or value deserializer is not set (as is the case below), the 
             // deserializer corresponding to the appropriate type from Confluent.Kafka.Deserializers
@@ -91,11 +91,14 @@ namespace policy_issue.Services
                             }
 
                             messages.Add(consumeResult?.Message?.Value ?? "No message text");
-
                             _logger.LogInformation($"Received message at {consumeResult.TopicPartitionOffset}: {consumeResult.Message.Value}");
+                            
+
+                            
 
                             if (consumeResult.Offset % commitPeriod == 0)
                             {
+                                
                                 // The Commit method sends a "commit offsets" request to the Kafka
                                 // cluster and synchronously waits for the response. This is very
                                 // slow compared to the rate at which the consumer is capable of
@@ -111,6 +114,7 @@ namespace policy_issue.Services
                                     _logger.LogInformation($"Commit error: {e.Error.Reason}");
                                 }
                             }
+                            return messages;
                         }
                         catch (ConsumeException e)
                         {
