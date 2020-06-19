@@ -83,7 +83,7 @@ namespace policy_issue.Controllers
             var mongo = new MongoConnector(MongoConnectionString);
             var policyObject = mongo.GetPolicyObject(quoteId);
 
-            policyObject.Add(new JProperty("policy-number", GeneratePolicyNumber()));
+            policyObject.Add(new JProperty("PolicyNumber", GeneratePolicyNumber()));
             policyObject.Add(new JProperty("issue-info", request));
             
 
