@@ -20,14 +20,14 @@ namespace policy_issue.Services
             
             if(string.IsNullOrEmpty(queryField))
             {
-                var result = collection.Find(new BsonDocument()).FirstOrDefault();
-                return result.ToString();
+                var result = collection.Find(new BsonDocument()).Limit(10).ToList();
+                return result.ToJson();
             }
             else
             {
                 var builders = Builders<BsonDocument>.Filter.Eq(queryField, queryValue);
                  var result = collection.Find(builders).FirstOrDefault();
-                return result.ToString();
+                return result.ToJson();
             }
         }
     }
