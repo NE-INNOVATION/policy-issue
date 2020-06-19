@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json.Linq;
@@ -41,54 +42,48 @@ namespace policy_issue.Services
 
         public JObject GetPolicyObject(string quoteId)
         {
-            return new JObject(
-                new JProperty("vehicles", GetVehicle(quoteId)),
-                new JProperty("drivers", GetDrivers(quoteId)),
-                new JProperty("Customer", GetCustomer(quoteId)),
-                new JProperty("coverages", GetRate(quoteId))
-                
-                );
+            return new JObject(new JProperty("vehicles", GetVehicle(quoteId)),
+            new JProperty("drivers", GetDrivers(quoteId)),
+            new JProperty("customer", GetCustomer(quoteId).FirstOrDefault() ?? new JArray()),
+            new JProperty("coverages",  GetRate(quoteId)));
         }
 
-        public JObject GetCustomer(string quoteId)
+        public JArray GetCustomer(string quoteId)
         {
-            return GetData("col_lrqi_customers", quoteId);
+            return GetData("col_lrqi_customers", quoteId, "customer");
         }
 
-        public JObject GetVehicle(string quoteId)
+        public JArray GetVehicle(string quoteId)
         {
-            return GetData("col_lrqi_vehicles", quoteId);
+            return GetData("col_lrqi_vehicles", quoteId, "vehicles");
         }
 
-        public JObject GetDrivers(string quoteId)
+        public JArray GetDrivers(string quoteId)
         {
-            return GetData("col_lrqi_drivers", quoteId);
+            return GetData("col_lrqi_drivers", quoteId, "drivers");
         }
 
-        public JObject GetRate(string quoteId)
+        public JArray GetRate(string quoteId)
         {
-            return GetData("col_lrqi_rate_issue", quoteId);
+            return GetData("col_lrqi_rate_issue", quoteId, "coverages");
         }
 
-        public JObject GetIncidents(string quoteId)
+        public JArray GetIncidents(string quoteId)
         {
-            return GetData("col_lrqi_incidents", quoteId);
+            return GetData("col_lrqi_incidents", quoteId, "incidents");
         }
 
-        private JObject GetData(string collectionName, string quoteId)
+        private JArray GetData(string collectionName, string quoteId, string objectName)
         {
             var collection = _database.GetCollection<BsonDocument>(collectionName);
 
             var builders = Builders<BsonDocument>.Filter.Eq("quoteId", quoteId);
             var result = collection.Find(builders).ToList();
 
-            if (result.Count > 0) 
-            {
-                RemoveIdObject(result);
-                return JObject.Parse(result.ToJson());
+            RemoveIdObject(result);
+            return new JArray { result.Select(x=> new JValue(x.ToJson())).ToArray() };
+            //return new JObject(new JProperty(objectName,new JArray { result.Select(x=> new JValue(x.ToJson())).ToArray() } ));
 
-            }
-            return new JObject(new JProperty("Message", "No data found"));
         }
 
         private static void RemoveIdObject(List<BsonDocument> response)
@@ -97,6 +92,8 @@ namespace policy_issue.Services
             {
                 BsonElement bsonElement;
                 if (doc.TryGetElement("_id", out bsonElement))
+                    doc.RemoveElement(bsonElement);
+                if (doc.TryGetElement("quoteId", out bsonElement))
                     doc.RemoveElement(bsonElement);
                 
             }

@@ -66,7 +66,7 @@ namespace policy_issue.Controllers
         {
             try
             {
-            var mongo = new MongoConnector(MongoConnectionString);
+            var mongo = new MongoConnector(MongoConnectionString,"lrqi");
             return mongo.GetCollectionData(database,collection, queryName,queryValue);
             }
             catch(Exception ex)
@@ -82,17 +82,13 @@ namespace policy_issue.Controllers
             
             var mongo = new MongoConnector(MongoConnectionString);
             var policyObject = mongo.GetPolicyObject(quoteId);
+
+            policyObject.Add(new JProperty("policy-number", GeneratePolicyNumber()));
+            policyObject.Add(new JProperty("issue-info", request));
             
 
-            var policyInfo = new JObject(
-                new JProperty("policy", 
-                    new JObject(
-                        new JProperty("policy-number",GeneratePolicyNumber()),
-                        new JProperty("policy-info", request, mongo))));
-            var policyToken = policyInfo.SelectToken("policy");
-
-            var message = await KafkaService.SendMessage(policyToken.ToString(), _logger);
-            var finalResult = new JObject(new JProperty("result",new JObject(new JProperty("status",message),new JProperty("policy",policyToken))));
+            var message = await KafkaService.SendMessage(policyObject.ToString(), _logger);
+            var finalResult = new JObject(new JProperty("result",new JObject(new JProperty("status",message),new JProperty("policy",policyObject))));
             return Ok(finalResult.ToString());
 
         }
