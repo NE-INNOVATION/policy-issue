@@ -63,6 +63,21 @@ namespace policy_issue.Controllers
             return _consumer.SetupConsume((time > 20000 || time == 0 )?4000 : time ).FirstOrDefault();
         }
 
+        [HttpPost("mongo/{collection}")]
+        public string MongoUpdate(string collection,[FromBody] object content)
+        {
+            try
+            {
+            var mongo = new MongoConnector(MongoConnectionString,MONGO_DB_NAME);
+            mongo.InsertData(collection,JObject.Parse(content.ToString()));
+            }
+            catch(Exception ex)
+            {
+                return ex.ToString();
+            }
+            return "Sucess";
+        }
+
         [HttpGet("mongo")]
         public string MongoConnector([FromQuery] string database, [FromQuery] string collection, [FromQuery] string queryName, [FromQuery] string queryValue)
         {

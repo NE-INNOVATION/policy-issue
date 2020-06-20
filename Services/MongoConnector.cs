@@ -40,6 +40,16 @@ namespace policy_issue.Services
             }
         }
 
+        public void InsertData(string collectionName, JObject content)
+        {
+            if(!_database.ListCollectionNames().ToList().Any(x=>x == collectionName))
+            {
+                _database.CreateCollection(collectionName);
+            }
+            var collection = _database.GetCollection<BsonDocument>(collectionName);
+            collection.InsertOne(BsonDocument.Parse(content.ToString()));
+        }
+
         public JObject GetPolicyObject(string quoteId)
         {
             return new JObject(new JProperty("Vehicles", GetVehicle(quoteId)),
