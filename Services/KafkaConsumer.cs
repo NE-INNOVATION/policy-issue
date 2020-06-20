@@ -59,7 +59,7 @@ namespace policy_issue.Services
                 .SetStatisticsHandler((_, json) => _logger.LogInformation($"Statistics: {json}"))
                 .SetPartitionsAssignedHandler((c, partitions) =>
                 {
-                    _logger.LogInformation($"Assigned partitions: [{string.Join(", ", partitions)}]");
+                    //_logger.LogInformation($"Assigned partitions: [{string.Join(", ", partitions)}]");
                     // possibly manually specify start offsets or override the partition assignment provided by
                     // the consumer group by returning a list of topic/partition/offsets to assign to, e.g.:
                     // 
@@ -67,7 +67,7 @@ namespace policy_issue.Services
                 })
                 .SetPartitionsRevokedHandler((c, partitions) =>
                 {
-                    _logger.LogInformation($"Revoking assignment: [{string.Join(", ", partitions)}]");
+                    //_logger.LogInformation($"Revoking assignment: [{string.Join(", ", partitions)}]");
                 })
                 .Build())
             {
@@ -84,16 +84,14 @@ namespace policy_issue.Services
 
                             if (consumeResult.IsPartitionEOF)
                             {
-                                _logger.LogInformation(
-                                    $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
+                                // _logger.LogInformation(
+                                //     $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
 
                                 continue;
                             }
 
                             messages.Add(consumeResult?.Message?.Value ?? "No message text");
                             _logger.LogInformation($"Received message at {consumeResult.TopicPartitionOffset}: {consumeResult.Message.Value}");
-                            
-
                             
 
                             if (consumeResult.Offset % commitPeriod == 0)
@@ -111,14 +109,14 @@ namespace policy_issue.Services
                                 }
                                 catch (KafkaException e)
                                 {
-                                    _logger.LogInformation($"Commit error: {e.Error.Reason}");
+                                    _logger.LogError($"Commit error: {e.Error.Reason}");
                                 }
                             }
                             return messages;
                         }
                         catch (ConsumeException e)
                         {
-                            _logger.LogInformation($"Consume error: {e.Error.Reason}");
+                            _logger.LogError($"Consume error: {e.Error.Reason}");
                         }
                     }
                 }

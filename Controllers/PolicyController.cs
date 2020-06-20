@@ -17,7 +17,6 @@ namespace policy_issue.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [EnableCors]
     public class PolicyController : ControllerBase
     {
 
@@ -81,6 +80,8 @@ namespace policy_issue.Controllers
         [HttpPost("issue/{quoteId}")]
         public async Task<IActionResult> Issue(string quoteId,[FromBody] object content)
         {
+             try
+            {
             var policyNumber = GeneratePolicyNumber();
             var request = JObject.Parse(content.ToString());
             
@@ -93,6 +94,12 @@ namespace policy_issue.Controllers
             var message = await KafkaService.SendMessage(policyObject.ToString(), _logger);
             var finalResult = new JObject(new JProperty("policyNumber", policyNumber), new JProperty("result",new JObject(new JProperty("status",message),new JProperty("policy",policyObject))));
             return Ok(finalResult.ToString());
+            }
+            catch(Exception e)
+            {
+               _logger.LogError(e.ToString());
+               return Ok();
+            }
         }
 
         [HttpPost("publish")]
