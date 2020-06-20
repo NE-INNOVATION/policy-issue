@@ -11,11 +11,13 @@ using policy_issue.Services;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Cors;
 
 namespace policy_issue.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [EnableCors]
     public class PolicyController : ControllerBase
     {
 
@@ -79,19 +81,18 @@ namespace policy_issue.Controllers
         [HttpPost("issue/{quoteId}")]
         public async Task<IActionResult> Issue(string quoteId,[FromBody] object content)
         {
+            var policyNumber = GeneratePolicyNumber();
             var request = JObject.Parse(content.ToString());
             
             var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
             var policyObject = mongo.GetPolicyObject(quoteId);
 
-            policyObject.Add(new JProperty("PolicyNumber", GeneratePolicyNumber()));
+            policyObject.Add(new JProperty("PolicyNumber", policyNumber));
             policyObject.Add(new JProperty("issue-info", request));
             
-
             var message = await KafkaService.SendMessage(policyObject.ToString(), _logger);
-            var finalResult = new JObject(new JProperty("result",new JObject(new JProperty("status",message),new JProperty("policy",policyObject))));
+            var finalResult = new JObject(new JProperty("policyNumber", policyNumber), new JProperty("result",new JObject(new JProperty("status",message),new JProperty("policy",policyObject))));
             return Ok(finalResult.ToString());
-
         }
 
         [HttpPost("publish")]

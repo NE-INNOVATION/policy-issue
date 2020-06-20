@@ -26,6 +26,15 @@ namespace policy_issue
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+           {
+               options.AddDefaultPolicy(
+                               builder =>
+                               {
+                                   builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                               });
+           });
+
             services.AddSingleton<KafkaConsumer>();
             services.AddControllers();
         }
@@ -40,7 +49,7 @@ namespace policy_issue
 
             app.UseRouting();
 
-            //app.UseAuthorization();
+            app.UseCors();
 
             app.UseEndpoints(endpoints =>
             {
