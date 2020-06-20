@@ -103,7 +103,7 @@ namespace policy_issue.Controllers
             var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
             var policyObject = mongo.GetPolicyObject(quoteId);
 
-            policyObject.Add(new JProperty("PolicyNumber", policyNumber));
+            policyObject.Add(new JProperty("policyNumber", policyNumber));
             policyObject.Add(new JProperty("issue-info", request));
             
             var message = await KafkaService.SendMessage(policyObject.ToString(), _logger);

@@ -52,10 +52,10 @@ namespace policy_issue.Services
 
         public JObject GetPolicyObject(string quoteId)
         {
-            return new JObject(new JProperty("Vehicles", GetVehicle(quoteId)),
-            new JProperty("Drivers", GetDrivers(quoteId)),
-            new JProperty("Customer", GetCustomer(quoteId).FirstOrDefault() ?? new JArray()),
-            new JProperty("Coverages",  GetRate(quoteId)));
+            return new JObject(new JProperty("vehicles", GetVehicle(quoteId)),
+            new JProperty("drivers", GetDrivers(quoteId)),
+            new JProperty("customer", GetCustomer(quoteId).FirstOrDefault() ?? new JArray()),
+            new JProperty("coverages",  GetRate(quoteId)));
         }
 
         public JArray GetCustomer(string quoteId)
