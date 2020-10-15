@@ -27,6 +27,8 @@ namespace policy_issue.Controllers
 
         private static string MONGO_DB_NAME = Environment.GetEnvironmentVariable("MONGO_DB_NAME") ?? "lrqi";
 
+        private static string MONGO_PolicyIssue_Collection = Environment.GetEnvironmentVariable("MONGO_POLICYISSUE_COLL") ?? "col_lrqi_policy_issue";
+
         public PolicyController(ILogger<PolicyController> logger, KafkaConsumer consumer)
         {
             _logger = logger;
@@ -93,27 +95,30 @@ namespace policy_issue.Controllers
         }
 
         [HttpPost("issue/{quoteId}")]
-        public async Task<IActionResult> Issue(string quoteId,[FromBody] object content)
+        public async Task<IActionResult> Issue(string quoteId, [FromBody] object content)
         {
-             try
+            try
             {
-            var policyNumber = GeneratePolicyNumber();
-            var request = JObject.Parse(content.ToString());
-            
-            var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
-            var policyObject = mongo.GetPolicyObject(quoteId);
+                var policyNumber = GeneratePolicyNumber();
+                var request = JObject.Parse(content.ToString());
 
-            policyObject.Add(new JProperty("policyNumber", policyNumber));
-            policyObject.Add(new JProperty("issue-info", request));
-            
-            var message = await KafkaService.SendMessage(policyObject.ToString(), _logger);
-            var finalResult = new JObject(new JProperty("policyNumber", policyNumber), new JProperty("result",new JObject(new JProperty("status",message),new JProperty("policy",policyObject))));
-            return Ok(finalResult.ToString());
+                var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
+
+                mongo.InsertData(MONGO_PolicyIssue_Collection, JObject.Parse(content.ToString()));
+
+                var policyObject = mongo.GetPolicyObject(quoteId);
+
+                policyObject.Add(new JProperty("policyNumber", policyNumber));
+                policyObject.Add(new JProperty("issue-info", request));
+
+                var message = await KafkaService.SendMessage(policyObject.ToString(), _logger);
+                var finalResult = new JObject(new JProperty("policyNumber", policyNumber), new JProperty("result", new JObject(new JProperty("status", message), new JProperty("policy", policyObject))));
+                return Ok(finalResult.ToString());
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-               _logger.LogError(e.ToString());
-               return Ok();
+                _logger.LogError(e.ToString());
+                return Ok();
             }
         }
 
