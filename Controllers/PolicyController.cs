@@ -123,7 +123,7 @@ namespace policy_issue.Controllers
         }
 
         [HttpPost("publish")]
-        public async System.Threading.Tasks.Task<string> publishAsync([FromBody] Object requestBody)
+        public async System.Threading.Tasks.Task<string> publishAsync([FromBody] object requestBody)
         {
             _logger.LogInformation("Service called for publish");
             return await KafkaService.SendMessage(requestBody.ToString(), _logger);
