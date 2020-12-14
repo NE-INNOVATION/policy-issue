@@ -6,6 +6,6 @@ namespace policy_issue.Model
         public string confirmContactNum { get; set; }
         public string bankName { get; set; }
         public string accountNum { get; set; }
-
+ 
     }
 }
