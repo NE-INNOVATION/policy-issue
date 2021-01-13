@@ -66,9 +66,9 @@ namespace policy_issue.Controllers
         {
             if(PolicyData.Count > 0 )
             {
-                var content =  PolicyData[0].ToString();
+                var content = new[] { PolicyData[0].ToString() };
                 PolicyData.RemoveAt(0);
-                return content;
+                return content[0];
             }
             return "";
         }
@@ -121,7 +121,7 @@ namespace policy_issue.Controllers
 
                 //var message = await KafkaService.SendMessage(policyObject.ToString(), _logger);
                 var message = "success";
-                PolicyData.Add(message);
+                PolicyData.Add(policyObject.ToString());
                 var finalResult = new JObject(new JProperty("policyNumber", policyNumber), new JProperty("result", new JObject(new JProperty("status", message), new JProperty("policy", policyObject))));
                 return Ok(finalResult.ToString());
             }
