@@ -20,6 +20,8 @@ namespace policy_issue.Controllers
     public class PolicyController : ControllerBase
     {
 
+        private static List<string> PolicyData = new List<string>();
+
         private readonly ILogger<PolicyController> _logger;
         private readonly KafkaConsumer _consumer;
 
@@ -62,6 +64,12 @@ namespace policy_issue.Controllers
         [HttpGet("message")]
         public string GetMessage([FromQuery] long time)
         {
+            if(PolicyData.Count > 0 )
+            {
+                var content =  PolicyData[0].ToString();
+                PolicyData.RemoveAt(0);
+                return content;
+            }
             return _consumer.SetupConsume((time > 20000 || time == 0 )?4000 : time ).FirstOrDefault();
         }
 
@@ -112,6 +120,7 @@ namespace policy_issue.Controllers
                 policyObject.Add(new JProperty("issue-info", request));
 
                 var message = await KafkaService.SendMessage(policyObject.ToString(), _logger);
+                PolicyData.Add(policyObject.ToString());
                 var finalResult = new JObject(new JProperty("policyNumber", policyNumber), new JProperty("result", new JObject(new JProperty("status", message), new JProperty("policy", policyObject))));
                 return Ok(finalResult.ToString());
             }
