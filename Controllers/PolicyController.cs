@@ -21,6 +21,9 @@ namespace policy_issue.Controllers
     {
 
         private readonly ILogger<PolicyController> _logger;
+
+        private readonly DataModel _model;
+
         private readonly KafkaConsumer _consumer;
 
         private static string MongoConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION") ?? "mongodb://lrqi_db:lrqi_db_pwd@lrqidb-shard-00-00-wksjy.mongodb.net:27017,lrqidb-shard-00-01-wksjy.mongodb.net:27017,lrqidb-shard-00-02-wksjy.mongodb.net:27017/test?authSource=admin&replicaSet=LRQIDB-shard-0&readPreference=primary&retryWrites=true&ssl=true";
@@ -29,10 +32,11 @@ namespace policy_issue.Controllers
 
         private static string MONGO_PolicyIssue_Collection = Environment.GetEnvironmentVariable("MONGO_POLICYISSUE_COLL") ?? "col_lrqi_policy_issue";
 
-        public PolicyController(ILogger<PolicyController> logger, KafkaConsumer consumer)
+        public PolicyController(ILogger<PolicyController> logger, KafkaConsumer consumer, DataModel model)
         {
             _logger = logger;
             _consumer =  consumer;
+            _model = model;
         }
 
         [HttpGet("config")]
@@ -62,7 +66,7 @@ namespace policy_issue.Controllers
         [HttpGet("message")]
         public string GetMessage([FromQuery] long time)
         {
-            return _consumer.ConsumeMessage();
+            return _model.GetMessage();
         }
 
         [HttpPost("mongo/{collection}")]

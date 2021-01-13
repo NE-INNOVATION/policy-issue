@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace policy_issue.Services
 {
-    public class KafkaConsumer : IDisposable
+    public class KafkaConsumer
     {
         IConsumer<Ignore, string> _kafkaConsumer;
         ConsumerConfig _consumerConfig;
@@ -38,34 +38,34 @@ namespace policy_issue.Services
                 EnablePartitionEof = true
             };;
 
-            SetupConsume();
+            //SetupConsume();
         }
 
-        public string ConsumeMessage(){
-            var consumeResult = _kafkaConsumer.Consume();
-            if (consumeResult.IsPartitionEOF)
-            {
-                // _logger.LogInformation(
-                //     $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
-                return "";
+        // public string ConsumeMessage(){
+        //     var consumeResult = _kafkaConsumer.Consume();
+        //     if (consumeResult.IsPartitionEOF)
+        //     {
+        //         // _logger.LogInformation(
+        //         //     $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
+        //         return "";
 
-            }
-            _logger.LogInformation($"Received message at {consumeResult.TopicPartitionOffset}: {consumeResult.Message.Value}");
+        //     }
+        //     _logger.LogInformation($"Received message at {consumeResult.TopicPartitionOffset}: {consumeResult.Message.Value}");
 
-            Task tcs = new Task(()=> {
-                _kafkaConsumer.Commit(consumeResult);
-                _logger.LogInformation("Committing offset ");
-                });
+        //     Task tcs = new Task(()=> {
+        //         _kafkaConsumer.Commit(consumeResult);
+        //         _logger.LogInformation("Committing offset ");
+        //         });
 
-            return consumeResult?.Message?.Value ?? "No message text";
-        }
+        //     return consumeResult?.Message?.Value ?? "No message text";
+        // }
 
-        public void Dispose()
+        public void CloseConsume()
         {
             if(_kafkaConsumer != null) _kafkaConsumer.Close();
         }
 
-        public void SetupConsume(long pollingMs = 4000)
+        public void SetupConsume(DataModel model = null)
         {
             var topics = new[] { "policy" };
 
@@ -93,10 +93,42 @@ namespace policy_issue.Services
                 .Build();
             {
                 _kafkaConsumer.Subscribe(topics);
+
+                Task.Factory.StartNew((parameter)=> {
+
+                    var dataStore =  parameter as DataStore;
+                    while(true)
+                    {
+                        var consumeResult = dataStore.consumer.Consume();
+                        if (consumeResult.IsPartitionEOF)
+                        {
+                            _logger.LogInformation(
+                                $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
+                            return "";
+                        }
+                        if(consumeResult?.Message?.Value != null){
+                            dataStore.model.SetMessage(consumeResult.Message.Value);
+                        }
+                        dataStore.consumer.Commit(consumeResult);
+
+                    }
+
+                }, new DataStore{ consumer =_kafkaConsumer, model = model, logger =_logger });
                 
             }
 
         }
     }
 
+    public class DataStore
+    {
+        public DataModel model;
+
+        public IConsumer<Ignore, string> consumer;
+
+        public ILogger<KafkaConsumer> logger;
+
+    }
+
 }
+
