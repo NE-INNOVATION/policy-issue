@@ -62,7 +62,7 @@ namespace policy_issue.Controllers
         [HttpGet("message")]
         public string GetMessage([FromQuery] long time)
         {
-            return _consumer.SetupConsume();
+            return _consumer.SetupConsume(4000);
         }
 
         [HttpPost("mongo/{collection}")]
