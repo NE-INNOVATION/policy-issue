@@ -22,6 +22,8 @@ namespace policy_issue.Services
         ConsumerConfig _consumerConfig;
         ILogger<KafkaConsumer> _logger;
 
+        CancellationTokenSource _token;
+
         private List<string> messages = new List<string>();
 
         public KafkaConsumer(ILogger<KafkaConsumer> logger)
@@ -62,19 +64,32 @@ namespace policy_issue.Services
 
         public void CloseConsume()
         {
-            if(_kafkaConsumer != null) _kafkaConsumer.Close();
+            if(_token != null) _token.Cancel();
         }
 
         public void SetupConsume(DataModel model = null)
         {
-            var topics = new[] { "policy" };
+            _token = new CancellationTokenSource();
+            CancellationToken ct = _token.Token;
+            
+            Task.Factory.StartNew((parameter)=> {
 
-            // Note: If a key or value deserializer is not set (as is the case below), the 
-            // deserializer corresponding to the appropriate type from Confluent.Kafka.Deserializers
-            // will be used automatically (where available). The default deserializer for string
-            // is UTF8. The default deserializer for Ignore returns null for all input data
-            // (including non-null data).
-            _kafkaConsumer = new ConsumerBuilder<Ignore, string>(_consumerConfig)
+                var model =  parameter as DataModel;
+
+                var topics = new[] { "policy" };
+
+               var consumerConfig=  new ConsumerConfig
+                {
+                    BootstrapServers = "my-cluster-kafka-bootstrap:9092",
+                    GroupId = "csharp-consumer",
+                    EnableAutoCommit = false,
+                    StatisticsIntervalMs = 5000,
+                    SessionTimeoutMs = 6000,
+                    AutoOffsetReset = AutoOffsetReset.Earliest,
+                    EnablePartitionEof = true
+                };;
+
+                using(var consumer = new ConsumerBuilder<Ignore, string>(_consumerConfig)
                 // Note: All handlers are called on the main .Consume thread.
                 .SetErrorHandler((_, e) => _logger.LogInformation($"Error: {e.Reason}"))
                 .SetStatisticsHandler((_, json) => _logger.LogInformation($"Statistics: {json}"))
@@ -90,32 +105,28 @@ namespace policy_issue.Services
                 {
                     //_logger.LogInformation($"Revoking assignment: [{string.Join(", ", partitions)}]");
                 })
-                .Build();
+                .Build())
             {
-                _kafkaConsumer.Subscribe(topics);
-
-                Task.Factory.StartNew((parameter)=> {
-
-                    var dataStore =  parameter as DataStore;
-                    while(true)
-                    {
-                        var consumeResult = dataStore.consumer.Consume();
-                        if (consumeResult.IsPartitionEOF)
-                        {
-                            _logger.LogInformation(
-                                $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
-                            return "";
-                        }
-                        if(consumeResult?.Message?.Value != null){
-                            dataStore.model.SetMessage(consumeResult.Message.Value);
-                        }
-                        dataStore.consumer.Commit(consumeResult);
-
+                consumer.Subscribe(topics);
+                while(true)
+                {
+                    if(_token.IsCancellationRequested){
+                        break;
                     }
+                    var consumeResult = consumer.Consume();
+                    if (consumeResult.IsPartitionEOF)
+                    {
+                        _logger.LogInformation(
+                            $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
+                    }
+                    if(consumeResult?.Message?.Value != null){
+                        model.SetMessage(consumeResult.Message.Value);
+                    }
+                    consumer.Commit(consumeResult);
 
-                }, new DataStore{ consumer =_kafkaConsumer, model = model, logger =_logger });
-                
-            }
+                }
+
+                }},model, _token.Token);
 
         }
     }
