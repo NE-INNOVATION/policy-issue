@@ -70,7 +70,7 @@ namespace policy_issue.Controllers
                 PolicyData.RemoveAt(0);
                 return content;
             }
-            return _consumer.SetupConsume((time > 20000 || time == 0 )?4000 : time ).FirstOrDefault();
+            return "";
         }
 
         [HttpPost("mongo/{collection}")]
