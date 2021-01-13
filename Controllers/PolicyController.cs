@@ -120,7 +120,8 @@ namespace policy_issue.Controllers
                 policyObject.Add(new JProperty("issue-info", request));
 
                 var message = await KafkaService.SendMessage(policyObject.ToString(), _logger);
-                PolicyData.Add(policyObject.ToString());
+                var message = "success";
+                PolicyData.Add(message);
                 var finalResult = new JObject(new JProperty("policyNumber", policyNumber), new JProperty("result", new JObject(new JProperty("status", message), new JProperty("policy", policyObject))));
                 return Ok(finalResult.ToString());
             }
