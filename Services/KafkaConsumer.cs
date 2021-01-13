@@ -124,7 +124,7 @@ namespace policy_issue.Services
                 }
             }
 
-            return messages;
+            return "";
 
         }
     }
