@@ -18,78 +18,42 @@ namespace policy_issue.Services
 {
     public class KafkaConsumer
     {
-        IConsumer<Ignore, string> _kafkaConsumer;
-        ConsumerConfig _consumerConfig;
+        IConsumer<Null, string> _kafkaConsumer;
         ILogger<KafkaConsumer> _logger;
-
-        CancellationTokenSource _token;
 
         private List<string> messages = new List<string>();
 
         public KafkaConsumer(ILogger<KafkaConsumer> logger)
         {
             _logger = logger;
-            _consumerConfig=  new ConsumerConfig
+
+        }
+
+        public List<string> SetupConsume(long pollingMs = 4000)
+        {
+            messages.Clear();
+            var timer = new Stopwatch();
+            
+            var topics = new[] { "policy" };
+            var config = new ConsumerConfig
             {
                 BootstrapServers = "my-cluster-kafka-bootstrap:9092",
                 GroupId = "csharp-consumer",
-                EnableAutoCommit = true,
+                EnableAutoCommit = false,
                 StatisticsIntervalMs = 5000,
                 SessionTimeoutMs = 6000,
                 AutoOffsetReset = AutoOffsetReset.Earliest,
                 EnablePartitionEof = true
-            };;
+            };
 
-            //SetupConsume();
-        }
+            const int commitPeriod = 1;
 
-        // public string ConsumeMessage(){
-        //     var consumeResult = _kafkaConsumer.Consume();
-        //     if (consumeResult.IsPartitionEOF)
-        //     {
-        //         // _logger.LogInformation(
-        //         //     $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
-        //         return "";
-
-        //     }
-        //     _logger.LogInformation($"Received message at {consumeResult.TopicPartitionOffset}: {consumeResult.Message.Value}");
-
-        //     Task tcs = new Task(()=> {
-        //         _kafkaConsumer.Commit(consumeResult);
-        //         _logger.LogInformation("Committing offset ");
-        //         });
-
-        //     return consumeResult?.Message?.Value ?? "No message text";
-        // }
-
-        public void CloseConsume()
-        {
-            if(_token != null) _token.Cancel();
-        }
-
-        public void SetupConsume(DataModel model = null)
-        {
-            _token = new CancellationTokenSource();
-            CancellationToken ct = _token.Token;
-            
-            Task.Factory.StartNew((parameter)=> {
-
-                var model =  parameter as DataModel;
-
-                var topics = new[] { "policy" };
-
-               var consumerConfig=  new ConsumerConfig
-                {
-                    BootstrapServers = "my-cluster-kafka-bootstrap:9092",
-                    GroupId = "csharp-consumer",
-                    EnableAutoCommit = false,
-                    StatisticsIntervalMs = 5000,
-                    SessionTimeoutMs = 6000,
-                    AutoOffsetReset = AutoOffsetReset.Earliest,
-                    EnablePartitionEof = true
-                };;
-
-                using(var consumer = new ConsumerBuilder<Ignore, string>(_consumerConfig)
+            // Note: If a key or value deserializer is not set (as is the case below), the 
+            // deserializer corresponding to the appropriate type from Confluent.Kafka.Deserializers
+            // will be used automatically (where available). The default deserializer for string
+            // is UTF8. The default deserializer for Ignore returns null for all input data
+            // (including non-null data).
+            using (var consumer = new ConsumerBuilder<Ignore, string>(config)
                 // Note: All handlers are called on the main .Consume thread.
                 .SetErrorHandler((_, e) => _logger.LogInformation($"Error: {e.Reason}"))
                 .SetStatisticsHandler((_, json) => _logger.LogInformation($"Statistics: {json}"))
@@ -108,38 +72,64 @@ namespace policy_issue.Services
                 .Build())
             {
                 consumer.Subscribe(topics);
-                while(true)
+                timer.Start();
+
+                try
                 {
-                    if(_token.IsCancellationRequested){
-                        break;
-                    }
-                    var consumeResult = consumer.Consume();
-                    if (consumeResult.IsPartitionEOF)
+                    while (timer.ElapsedMilliseconds < 4000)
                     {
-                        _logger.LogInformation(
-                            $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
-                    }
-                    if(consumeResult?.Message?.Value != null){
-                        model.SetMessage(consumeResult.Message.Value);
-                    }
-                    consumer.Commit(consumeResult);
+                        try
+                        {
+                            var consumeResult = consumer.Consume();
 
+                            if (consumeResult.IsPartitionEOF)
+                            {
+                                // _logger.LogInformation(
+                                //     $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
+
+                                continue;
+                            }
+
+                            messages.Add(consumeResult?.Message?.Value ?? "No message text");
+                            _logger.LogInformation($"Received message at {consumeResult.TopicPartitionOffset}: {consumeResult.Message.Value}");
+                            
+
+                            if (consumeResult.Offset % commitPeriod == 0)
+                            {
+                                
+                                // The Commit method sends a "commit offsets" request to the Kafka
+                                // cluster and synchronously waits for the response. This is very
+                                // slow compared to the rate at which the consumer is capable of
+                                // consuming messages. A high performance application will typically
+                                // commit offsets relatively infrequently and be designed handle
+                                // duplicate messages in the event of failure.
+                                try
+                                {
+                                    consumer.Commit(consumeResult);
+                                }
+                                catch (KafkaException e)
+                                {
+                                    _logger.LogError($"Commit error: {e.Error.Reason}");
+                                }
+                            }
+                            return messages;
+                        }
+                        catch (ConsumeException e)
+                        {
+                            _logger.LogError($"Consume error: {e.Error.Reason}");
+                        }
+                    }
                 }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("Closing consumer.");
+                    consumer.Close();
+                }
+            }
 
-                }},model, _token.Token);
+            return messages;
 
         }
     }
 
-    public class DataStore
-    {
-        public DataModel model;
-
-        public IConsumer<Ignore, string> consumer;
-
-        public ILogger<KafkaConsumer> logger;
-
-    }
-
 }
-

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Confluent.Kafka;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -36,8 +35,6 @@ namespace policy_issue
                                });
            });
 
-           services.AddSingleton<DataModel>();
-
             services.AddSingleton<KafkaConsumer>();
             services.AddControllers();
         }
@@ -50,12 +47,6 @@ namespace policy_issue
                 app.UseDeveloperExceptionPage();
             }
 
-            var life =  app.ApplicationServices.GetService<IHostApplicationLifetime>();
-            var dataModel =  app.ApplicationServices.GetService<DataModel>();
-            var consumer =  app.ApplicationServices.GetService<KafkaConsumer>();
-            life.ApplicationStarted.Register(GetOnStarted(consumer, dataModel));
-            life.ApplicationStopping.Register(GetOnStopped(consumer));
-
             app.UseRouting();
 
             app.UseCors();
@@ -64,18 +55,6 @@ namespace policy_issue
             {
                 endpoints.MapControllers();
             });
-        }
-
-        private static Action GetOnStarted(KafkaConsumer consumer, DataModel model)
-        {
-            return () => {
-                    consumer.SetupConsume(model);
-                };
-        }
-
-        private static Action GetOnStopped(KafkaConsumer consumer)
-        {
-            return () => {consumer.CloseConsume();};
         }
     }
 }
