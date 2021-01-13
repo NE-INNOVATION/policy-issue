@@ -46,7 +46,7 @@ namespace policy_issue.Services
                 EnablePartitionEof = true
             };
 
-            const int commitPeriod = 10;
+            const int commitPeriod = 1;
 
             // Note: If a key or value deserializer is not set (as is the case below), the 
             // deserializer corresponding to the appropriate type from Confluent.Kafka.Deserializers
@@ -102,8 +102,10 @@ namespace policy_issue.Services
                                 // commit offsets relatively infrequently and be designed handle
                                 // duplicate messages in the event of failure.
                                 try
-                                {
-                                    consumer.Commit(consumeResult);
+                                { 
+                                    Task tcs = new Task(()=>consumer.Commit(consumeResult));
+                                    tcs.Start();
+                                    
                                 }
                                 catch (KafkaException e)
                                 {
