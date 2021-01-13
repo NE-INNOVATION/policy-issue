@@ -19,16 +19,17 @@ namespace policy_issue.Services
     public class KafkaConsumer : IDisposable
     {
         IConsumer<Ignore, string> _kafkaConsumer;
+        ConsumerConfig _consumerConfig;
         ILogger<KafkaConsumer> _logger;
 
         private List<string> messages = new List<string>();
 
-        public KafkaConsumer(ILogger<KafkaConsumer> logger)
+        public KafkaConsumer(ILogger<KafkaConsumer> logger, ConsumerConfig config)
         {
             _logger = logger;
+            _consumerConfig=  config;
 
             SetupConsume();
-
         }
 
         public string ConsumeMessage(){
@@ -58,23 +59,13 @@ namespace policy_issue.Services
         public void SetupConsume(long pollingMs = 4000)
         {
             var topics = new[] { "policy" };
-            var config = new ConsumerConfig
-            {
-                BootstrapServers = "my-cluster-kafka-bootstrap:9092",
-                GroupId = "csharp-consumer",
-                EnableAutoCommit = false,
-                StatisticsIntervalMs = 5000,
-                SessionTimeoutMs = 6000,
-                AutoOffsetReset = AutoOffsetReset.Earliest,
-                EnablePartitionEof = true
-            };
 
             // Note: If a key or value deserializer is not set (as is the case below), the 
             // deserializer corresponding to the appropriate type from Confluent.Kafka.Deserializers
             // will be used automatically (where available). The default deserializer for string
             // is UTF8. The default deserializer for Ignore returns null for all input data
             // (including non-null data).
-            _kafkaConsumer = new ConsumerBuilder<Ignore, string>(config)
+            _kafkaConsumer = new ConsumerBuilder<Ignore, string>(_consumerConfig)
                 // Note: All handlers are called on the main .Consume thread.
                 .SetErrorHandler((_, e) => _logger.LogInformation($"Error: {e.Reason}"))
                 .SetStatisticsHandler((_, json) => _logger.LogInformation($"Statistics: {json}"))
