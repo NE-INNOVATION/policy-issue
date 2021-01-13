@@ -26,12 +26,22 @@ namespace policy_issue.Services
         public KafkaConsumer(ILogger<KafkaConsumer> logger)
         {
             _logger = logger;
+        }
+
+        public string GetMessage(){
+
+            var content = messages != null && messages.Count > 0  ? messages[0]  : "";
+
+            if(messages != null && messages.Count > 0 ) messages.RemoveAt(0);
+        
+            return content;
 
         }
 
-        public List<string> SetupConsume(long pollingMs = 4000)
+
+
+        public void SetupConsume()
         {
-            messages.Clear();
             var timer = new Stopwatch();
             
             var topics = new[] { "policy" };
@@ -72,22 +82,14 @@ namespace policy_issue.Services
                 .Build())
             {
                 consumer.Subscribe(topics);
-                timer.Start();
-
                 try
                 {
-                    while (timer.ElapsedMilliseconds < 4000)
-                    {
                         try
                         {
                             var consumeResult = consumer.Consume();
 
                             if (consumeResult.IsPartitionEOF)
                             {
-                                // _logger.LogInformation(
-                                //     $"Reached end of topic {consumeResult.Topic}, partition {consumeResult.Partition}, offset {consumeResult.Offset}.");
-
-                                continue;
                             }
 
                             messages.Add(consumeResult?.Message?.Value ?? "No message text");
@@ -112,13 +114,11 @@ namespace policy_issue.Services
                                     _logger.LogError($"Commit error: {e.Error.Reason}");
                                 }
                             }
-                            return messages;
                         }
                         catch (ConsumeException e)
                         {
                             _logger.LogError($"Consume error: {e.Error.Reason}");
                         }
-                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -126,8 +126,6 @@ namespace policy_issue.Services
                     consumer.Close();
                 }
             }
-
-            return messages;
 
         }
     }

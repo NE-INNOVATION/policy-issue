@@ -33,6 +33,7 @@ namespace policy_issue.Controllers
         {
             _logger = logger;
             _consumer =  consumer;
+            _consumer.SetupConsume();
         }
 
         [HttpGet("config")]
@@ -62,7 +63,7 @@ namespace policy_issue.Controllers
         [HttpGet("message")]
         public string GetMessage([FromQuery] long time)
         {
-            return _consumer.SetupConsume((time > 20000 || time == 0 )?4000 : time ).FirstOrDefault();
+            return _consumer.GetMessage();
         }
 
         [HttpPost("mongo/{collection}")]
