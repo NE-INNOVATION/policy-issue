@@ -24,10 +24,19 @@ namespace policy_issue.Services
 
         private List<string> messages = new List<string>();
 
-        public KafkaConsumer(ILogger<KafkaConsumer> logger, ConsumerConfig config)
+        public KafkaConsumer(ILogger<KafkaConsumer> logger)
         {
             _logger = logger;
-            _consumerConfig=  config;
+            _consumerConfig=  new ConsumerConfig
+            {
+                BootstrapServers = "my-cluster-kafka-bootstrap:9092",
+                GroupId = "csharp-consumer",
+                EnableAutoCommit = true,
+                StatisticsIntervalMs = 5000,
+                SessionTimeoutMs = 6000,
+                AutoOffsetReset = AutoOffsetReset.Earliest,
+                EnablePartitionEof = true
+            };;
 
             SetupConsume();
         }
