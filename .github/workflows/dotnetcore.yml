@@ -64,6 +64,18 @@ jobs:
           'version'
           'project development'
           'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }} development/policy-issue:${{ steps.extract_branch.outputs.branch }}'
+    - name: OpenShift Action - Azure
+      uses: redhat-developer/openshift-actions@v2.0
+      with:
+        # The URL of the Openshift cluster
+        openshift_server_url: ${{ secrets.OPENSHIFT_AZURE_URL }}
+        # JSON with values to connect to the Openshift cluster
+        parameters: '{"username": "${{ secrets.OPENSHIFT_AZURE_USER }}", "acceptUntrustedCerts": "true", "password":"${{ secrets.OPENSHIFT_AZURE_PASSWORD }}"}'
+        # Oc command to be executed
+        cmd: |
+          'version'
+          'project development'
+          'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }} development/policy-issue:${{ steps.extract_branch.outputs.branch }}'
     - name: Scan Image
       uses: Azure/container-scan@v0
       continue-on-error: true
