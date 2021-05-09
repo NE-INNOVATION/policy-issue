@@ -25,7 +25,7 @@ namespace policy_issue.Controllers
         private readonly ILogger<PolicyController> _logger;
         private readonly KafkaConsumer _consumer;
 
-        private static string MongoConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION") ?? "mongodb://lrqi_db:lrqi_db_pwd@lrqidb-shard-00-00-wksjy.mongodb.net:27017,lrqidb-shard-00-01-wksjy.mongodb.net:27017,lrqidb-shard-00-02-wksjy.mongodb.net:27017/test?authSource=admin&replicaSet=LRQIDB-shard-0&readPreference=primary&retryWrites=true&ssl=true";
+        private static string MongoConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION") ?? "mongodb://neion_db:neion_db_pwd@ec2-18-116-161-43.us-east-2.compute.amazonaws.com:8081,ec2-3-142-155-241.us-east-2.compute.amazonaws.com:8081,ec2-3-20-135-160.us-east-2.compute.amazonaws.com:8081/lrqi?replicaSet=rs0&authSource=admin&retryWrites=true";
 
         private static string MONGO_DB_NAME = Environment.GetEnvironmentVariable("MONGO_DB_NAME") ?? "lrqi";
 
@@ -34,17 +34,17 @@ namespace policy_issue.Controllers
         public PolicyController(ILogger<PolicyController> logger, KafkaConsumer consumer)
         {
             _logger = logger;
-            _consumer =  consumer;
+            _consumer = consumer;
         }
 
         [HttpGet("config")]
         public string GetVariables()
         {
-            string message="";
+            string message = "";
 
-            foreach(DictionaryEntry e in System.Environment.GetEnvironmentVariables())
+            foreach (DictionaryEntry e in System.Environment.GetEnvironmentVariables())
             {
-                message += e.Key.ToString()  + "::" + e.Value.ToString() + "|||";
+                message += e.Key.ToString() + "::" + e.Value.ToString() + "|||";
             }
 
             return message;
@@ -54,7 +54,7 @@ namespace policy_issue.Controllers
         [HttpGet("policyData")]
         public string GetPolicyData([FromQuery] string quoteId)
         {
-           var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
+            var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
             var policyObject = mongo.GetPolicyObject(quoteId);
             return policyObject.ToString();
 
@@ -64,7 +64,7 @@ namespace policy_issue.Controllers
         [HttpGet("message")]
         public string GetMessage([FromQuery] long time)
         {
-            if(PolicyData.Count > 0 )
+            if (PolicyData.Count > 0)
             {
                 var content = new[] { PolicyData[0].ToString() };
                 PolicyData.RemoveAt(0);
@@ -74,14 +74,14 @@ namespace policy_issue.Controllers
         }
 
         [HttpPost("mongo/{collection}")]
-        public string MongoUpdate(string collection,[FromBody] object content)
+        public string MongoUpdate(string collection, [FromBody] object content)
         {
             try
             {
-            var mongo = new MongoConnector(MongoConnectionString,MONGO_DB_NAME);
-            mongo.InsertData(collection,JObject.Parse(content.ToString()));
+                var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
+                mongo.InsertData(collection, JObject.Parse(content.ToString()));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return ex.ToString();
             }
@@ -93,10 +93,10 @@ namespace policy_issue.Controllers
         {
             try
             {
-            var mongo = new MongoConnector(MongoConnectionString,MONGO_DB_NAME);
-            return mongo.GetCollectionData(database,collection, queryName,queryValue);
+                var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
+                return mongo.GetCollectionData(database, collection, queryName, queryValue);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return ex.ToString();
             }
@@ -141,7 +141,7 @@ namespace policy_issue.Controllers
 
         private string GeneratePolicyNumber()
         {
-            return RandomNumber(3,9).ToString()+ RandomNumber(111111,999999).ToString() + RandomNumber(111111,999999).ToString();
+            return RandomNumber(3, 9).ToString() + RandomNumber(111111, 999999).ToString() + RandomNumber(111111, 999999).ToString();
         }
 
         public int RandomNumber(int min, int max)
