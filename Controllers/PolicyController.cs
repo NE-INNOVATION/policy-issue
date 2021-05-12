@@ -109,12 +109,13 @@ namespace policy_issue.Controllers
             {
                 var policyNumber = GeneratePolicyNumber();
                 var request = JObject.Parse(content.ToString());
+                request.Add(new JProperty("policyNumber", policyNumber));
 
                 Console.WriteLine("request content here - " + content);
 
                 var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
 
-                mongo.InsertData(MONGO_PolicyIssue_Collection, JObject.Parse(content.ToString()));
+                mongo.InsertData(MONGO_PolicyIssue_Collection, request);
 
                 var policyObject = mongo.GetPolicyObject(quoteId);
 
