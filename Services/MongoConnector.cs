@@ -42,7 +42,7 @@ namespace policy_issue.Services
 
         public void InsertData(string collectionName, JObject content)
         {
-            if(!_database.ListCollectionNames().ToList().Any(x=>x == collectionName))
+            if (!_database.ListCollectionNames().ToList().Any(x => x == collectionName))
             {
                 _database.CreateCollection(collectionName);
             }
@@ -55,7 +55,7 @@ namespace policy_issue.Services
             return new JObject(new JProperty("vehicles", GetVehicle(quoteId)),
             new JProperty("drivers", GetDrivers(quoteId)),
             new JProperty("customer", GetCustomer(quoteId).FirstOrDefault() ?? new JArray()),
-            new JProperty("coverages",  GetRate(quoteId)));
+            new JProperty("coverages", GetRate(quoteId)));
         }
 
         public JArray GetCustomer(string quoteId)
@@ -91,21 +91,22 @@ namespace policy_issue.Services
             var result = collection.Find(builders).ToList();
 
             RemoveIdObject(result);
-            return new JArray { result.Select(x=> JObject.Parse(x.ToJson())).ToArray() };
+            Console.WriteLine("Getting data from mongo" + result);
+            return new JArray { result.Select(x => JObject.Parse(x.ToJson())).ToArray() };
             //return new JObject(new JProperty(objectName,new JArray { result.Select(x=> new JValue(x.ToJson())).ToArray() } ));
 
         }
 
         private static void RemoveIdObject(List<BsonDocument> response)
         {
-            foreach(BsonDocument doc in response)
+            foreach (BsonDocument doc in response)
             {
                 BsonElement bsonElement;
                 if (doc.TryGetElement("_id", out bsonElement))
                     doc.RemoveElement(bsonElement);
                 if (doc.TryGetElement("quoteId", out bsonElement))
                     doc.RemoveElement(bsonElement);
-                
+
             }
         }
     }
