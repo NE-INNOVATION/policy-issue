@@ -110,6 +110,8 @@ namespace policy_issue.Controllers
                 var policyNumber = GeneratePolicyNumber();
                 var request = JObject.Parse(content.ToString());
 
+                Console.WriteLine("request content here - " + content);
+
                 var mongo = new MongoConnector(MongoConnectionString, MONGO_DB_NAME);
 
                 mongo.InsertData(MONGO_PolicyIssue_Collection, JObject.Parse(content.ToString()));

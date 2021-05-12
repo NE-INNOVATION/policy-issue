@@ -75,7 +75,7 @@ namespace policy_issue.Services
 
         public JArray GetRate(string quoteId)
         {
-            return GetData("col_lrqi_rate_issue", quoteId, "coverages");
+            return GetData("col_lrqi_coverages", quoteId, "coverages");
         }
 
         public JArray GetIncidents(string quoteId)
