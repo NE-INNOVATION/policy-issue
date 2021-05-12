@@ -106,8 +106,8 @@ namespace policy_issue.Services
                 BsonElement bsonElement;
                 if (doc.TryGetElement("_id", out bsonElement))
                     doc.RemoveElement(bsonElement);
-                // if (doc.TryGetElement("quoteId", out bsonElement))
-                //     doc.RemoveElement(bsonElement);
+                if (doc.TryGetElement("quoteId", out bsonElement))
+                    doc.RemoveElement(bsonElement);
 
             }
         }
