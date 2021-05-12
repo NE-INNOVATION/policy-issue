@@ -52,10 +52,12 @@ namespace policy_issue.Services
 
         public JObject GetPolicyObject(string quoteId)
         {
-            return new JObject(new JProperty("vehicles", GetVehicle(quoteId)),
-            new JProperty("drivers", GetDrivers(quoteId)),
-            new JProperty("customer", GetCustomer(quoteId).FirstOrDefault() ?? new JArray()),
-            new JProperty("coverages", GetRate(quoteId)));
+            return new JObject(
+                new JProperty("vehicles", GetVehicle(quoteId)),
+                new JProperty("drivers", GetDrivers(quoteId)),
+                new JProperty("customer", GetCustomer(quoteId).FirstOrDefault() ?? new JArray()),
+                new JProperty("coverages", GetRate(quoteId))
+                );
         }
 
         public JArray GetCustomer(string quoteId)
@@ -91,7 +93,7 @@ namespace policy_issue.Services
             var result = collection.Find(builders).ToList();
 
             RemoveIdObject(result);
-            Console.WriteLine("Getting data from mongo" + new JArray { result.Select(x => JObject.Parse(x.ToJson())).ToArray() });
+            Console.WriteLine("Getting data from mongo - " + collectionName + " - " + objectName + " - " + new JArray { result.Select(x => JObject.Parse(x.ToJson())).ToArray() });
             return new JArray { result.Select(x => JObject.Parse(x.ToJson())).ToArray() };
             //return new JObject(new JProperty(objectName,new JArray { result.Select(x=> new JValue(x.ToJson())).ToArray() } ));
 
