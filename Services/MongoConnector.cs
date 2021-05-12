@@ -92,7 +92,7 @@ namespace policy_issue.Services
             var builders = Builders<BsonDocument>.Filter.Eq("quoteId", quoteId);
             var result = collection.Find(builders).ToList();
 
-            //RemoveIdObject(result);
+            RemoveIdObject(result);
             Console.WriteLine("Getting data from mongo - " + collectionName + " - " + objectName + " - " + quoteId + " - " + new JArray { result.Select(x => JObject.Parse(x.ToJson())).ToArray() });
             return new JArray { result.Select(x => JObject.Parse(x.ToJson())).ToArray() };
             //return new JObject(new JProperty(objectName,new JArray { result.Select(x=> new JValue(x.ToJson())).ToArray() } ));
@@ -106,8 +106,8 @@ namespace policy_issue.Services
                 BsonElement bsonElement;
                 if (doc.TryGetElement("_id", out bsonElement))
                     doc.RemoveElement(bsonElement);
-                if (doc.TryGetElement("quoteId", out bsonElement))
-                    doc.RemoveElement(bsonElement);
+                // if (doc.TryGetElement("quoteId", out bsonElement))
+                //     doc.RemoveElement(bsonElement);
 
             }
         }
