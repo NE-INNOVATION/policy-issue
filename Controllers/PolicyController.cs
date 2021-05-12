@@ -109,7 +109,7 @@ namespace policy_issue.Controllers
             {
                 var policyNumber = GeneratePolicyNumber();
                 var request = JObject.Parse(content.ToString());
-                request.Add(new JProperty("policyNumber", policyNumber));
+                request["policyNumber"] = policyNumber;
 
                 Console.WriteLine("request content here - " + content);
 
