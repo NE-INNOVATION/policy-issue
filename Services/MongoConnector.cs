@@ -91,7 +91,7 @@ namespace policy_issue.Services
             var result = collection.Find(builders).ToList();
 
             RemoveIdObject(result);
-            Console.WriteLine("Getting data from mongo" + result);
+            Console.WriteLine("Getting data from mongo" + new JArray { result.Select(x => JObject.Parse(x.ToJson())).ToArray() });
             return new JArray { result.Select(x => JObject.Parse(x.ToJson())).ToArray() };
             //return new JObject(new JProperty(objectName,new JArray { result.Select(x=> new JValue(x.ToJson())).ToArray() } ));
 
