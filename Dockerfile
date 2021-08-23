@@ -5,7 +5,7 @@ WORKDIR /app
 COPY *.csproj ./
 RUN dotnet restore -s https://api.nuget.org/v3/index.json --packages packages --ignore-failed-sources
 
-# Copy everything else and build
+# Copy everything else and build 
 COPY . ./
 RUN dotnet publish -c Release -o out
 
