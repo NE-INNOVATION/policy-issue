@@ -19,7 +19,7 @@ namespace policy_issue.Services
         public static async Task<string> SendMessage(string policy, ILogger<PolicyController> logger)
         {
             var config = new ProducerConfig {
-                BootstrapServers = "my-cluster-kafka-bootstrap:9092",
+                BootstrapServers = "policy-cluster-kafka-bootstrap:9092",
             };
 
             using (var p = new ProducerBuilder<Null, string>(config).Build())
