@@ -46,13 +46,13 @@ jobs:
     - name: Push Image to Github Registry
       run: |
           docker push quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}
-    - name: OpenShift Action
-      uses: redhat-developer/openshift-actions@v2.0
-      with:
+    #- name: OpenShift Action
+    #  uses: redhat-developer/openshift-actions@v2.0
+    #  with:
         # The URL of the Openshift cluster
-        openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_URL }}
+   #   openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_URL }}
         # JSON with values to connect to the Openshift cluster
-        parameters: '{"username": "${{ secrets.OPENSHIFT_USER }}", "acceptUntrustedCerts": "true", "password":"${{ secrets.OPENSHIFT_PASSWORD }}"}'
+   #     parameters: '{"username": "${{ secrets.OPENSHIFT_USER }}", "acceptUntrustedCerts": "true", "password":"${{ secrets.OPENSHIFT_PASSWORD }}"}'
         # Oc command to be executed
           #'version'
           #'project development'
@@ -60,10 +60,10 @@ jobs:
           #'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }} development/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
           #'new-app quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }}-${{ steps.extract_branch.outputs.sha_short }}'
           #'expose services/policy-issue':  
-        cmd: |
-          'version'
-          'project development'
-          'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }} development/policy-issue:${{ steps.extract_branch.outputs.branch }}'
+   #     cmd: |
+   #       'version'
+   #       'project development'
+   #       'tag --source=docker quay.io/neinnovationorg/policy-issue:${{ steps.extract_branch.outputs.branch }} development/policy-issue:${{ steps.extract_branch.outputs.branch }}'
     - name: OpenShift Action - Azure
       uses: redhat-developer/openshift-actions@v2.0
       with:
