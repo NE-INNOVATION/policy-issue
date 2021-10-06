@@ -37,7 +37,7 @@ namespace policy_issue.Services
             var topics = new[] { "policy" };
             var config = new ConsumerConfig
             {
-                BootstrapServers = "my-cluster-kafka-bootstrap:9092",
+                BootstrapServers = "policy-cluster-kafka-bootstrap:9092",
                 GroupId = "csharp-consumer",
                 EnableAutoCommit = false,
                 StatisticsIntervalMs = 5000,
